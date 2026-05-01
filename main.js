@@ -41,21 +41,46 @@ function onOpen() {
     }
 }
 
+function resizeCanvas(canvas) {
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    // Логическое разрешение 16:9
+    let LOGIC_WIDTH = isMobile ? 640 : 800;
+    let LOGIC_HEIGHT = isMobile ? 360 : 450;
+    
+    canvas.width = LOGIC_WIDTH;
+    canvas.height = LOGIC_HEIGHT;
+    
+    // Физический размер на экране (масштабируем, сохраняя пропорции)
+    const maxWidth = window.innerWidth - 40;
+    const maxHeight = window.innerHeight - 150;
+    let displayWidth = LOGIC_WIDTH;
+    let displayHeight = LOGIC_HEIGHT;
+    
+    const scaleX = maxWidth / LOGIC_WIDTH;
+    const scaleY = maxHeight / LOGIC_HEIGHT;
+    const scale = Math.min(scaleX, scaleY, 2.5); // максимум 2.5x, чтобы не было излишне крупно
+    displayWidth = Math.floor(LOGIC_WIDTH * scale);
+    displayHeight = Math.floor(LOGIC_HEIGHT * scale);
+    
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${displayHeight}px`;
+}
+
 window.onload = () => {
     startLoadingTextures();
     initMap();
-
     player.x = startX;
     player.y = startY;
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 400;   // 70% быстрее!
-    canvas.height = 300;
-    canvas.style.width = '1200px';   // Масштаб на экран
-    canvas.style.height = '800px';
-    canvas.style.imageRendering = 'pixelated';
-
+    resizeCanvas(canvas);   // первоначальный размер
+    
+    window.addEventListener('resize', () => {
+        resizeCanvas(canvas);
+        // не нужно ничего пересоздавать – следующий кадр использует новые размеры
+    });
+    
     initInput(onRead, onOpen);
 
     let lastTimestamp = 0;

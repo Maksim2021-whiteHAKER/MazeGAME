@@ -22,12 +22,18 @@ export function initInput(onRead, onOpen){
             case 's': case 'ArrowDown': keys.s = false; break
             case 'd': case 'ArrowRight': keys.d = false; break
         }
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'e', 'o'].includes(e.key)) {
-            e.preventDefault();
-        }
-
     });
 
+    document.querySelectorAll('[data-key]').forEach(btn => {
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            keys[btn.dataset.key] = true;
+        })
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            keys[btn.dataset.key] = false;
+        })
+    })
 
     const readBtn = document.getElementById('readBtn');
     const openBtn = document.getElementById('openBtn');
