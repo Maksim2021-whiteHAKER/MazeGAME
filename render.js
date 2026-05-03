@@ -1,18 +1,34 @@
 // render.js
 import { halfFOV, maxDist, FOV } from "./gameConfig.js";
-import { textures, wallImageData, floorImageData} from "./loadTextures.js"
-import { solidMap, items, signs } from "./mapData.js";
+import { doorImageData, secretDoorImageData, secretSignImageData, signImageData, textures, wallImageData } from "./loadTextures.js"
+import { items, signs } from "./mapData.js";
 import { gameState } from "./ui.js";
 import { castRayWithSide } from "./raycast.js";
 
 const wrap = (x) => ((x % 1) + 1) % 1;
 
+function getWallTextureForCell(cellX, cellY){
+    const doorItem = items.find(it => it.x === cellX && it.y === cellY && ( it.type === 'fake_door' || it.type === 'true_door' || it.type === 'secret_door' ))
+    const signItem = signs.find(s => s.x === cellX && s.y === cellY)
+    // console.table(`texture: ${signItem}`); // undefined бесконечный
+    
+    if (doorItem) {
+        switch (doorItem.type){
+            case 'secret_door': return textures['s_door'];
+            case 'fake_door': return textures['door'];
+            case 'true_door': return textures['g_door'];
+        }
+    }
+        // return doorItem.type === 'secret_door' ? textures['s_door'] : textures['door'];
+    if (signItem) return signItem.type === 'secret' ? textures['s_sign'] : textures['sign'];
+    
+    return textures['wall'];
+}
+
 export function draw3D(canvas, ctx, solidMap, player) {
     const w = canvas.width;
     const h = canvas.height;
     const wallTex = textures['wall'];
-    const floorTex = textures['floor'];
-    const hasFloorTex = floorTex?.complete && floorImageData;
 
     if (!wallTex?.complete) {
         // Рисуем заглушку пока грузится
@@ -36,45 +52,49 @@ export function draw3D(canvas, ctx, solidMap, player) {
         rayCos[col] = Math.cos(angle);
         raySin[col] = Math.sin(angle);
     }
+
     // Рисуем стены (как раньше, только сохраняем wallBottom)
     for (let col = 0; col < w; col++) {
         let { distance, side, hitX, hitY, cellX, cellY } = castRayWithSide(player.x, player.y, rayAngles[col], solidMap, maxDist);
         
-        const dist = Math.min(distance, maxDist);
-        
+        const dist = Math.min(distance, maxDist);      
         const wallHeight = (1 / (dist + 0.001)) * h;
         const wallTop = (h / 2) - wallHeight / 2;
         const wallBottom = (h / 2) + wallHeight / 2;
         wallBottoms[col] = wallBottom;
 
         // ... отрисовка стены (без изменений) ...
-        if (wallTex?.complete && wallImageData) {
+        const textureToDraw = getWallTextureForCell(cellX, cellY);
+        if (textureToDraw?.complete){
             let wallX = (side === 0) ? hitY: hitX;
             wallX = wrap(wallX);
-            const texX = Math.floor(wallX * wallTex.width);
-            // Рисуем через drawImage (так быстрее, чем пиксели)
-            ctx.drawImage(wallTex, texX, 0, 1, wallTex.height, col, wallTop, 1, wallBottom - wallTop);
-
-            if (solidMap[cellY]?.[cellX] === 2){
-                ctx.fillStyle = `rgba(213, 15, 0, 0.025)`;
-                ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
-            }
-            // затемнение
-            const fog = Math.min(1, 1.2 / (distance * 0.5 + 0.3));
-            if (fog < 1) {
-                ctx.fillStyle = `rgba(0,0,0,${1 - fog})`;
-                ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
-            }
-            if (side === 1) {
-                ctx.fillStyle = `rgba(0,0,0,0.2)`;
-                ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
-            }
+            const texX = Math.floor(wallX * textureToDraw.width);
+            ctx.drawImage(textureToDraw, texX, 0, 1, textureToDraw.height, col, wallTop, 1, wallBottom - wallTop);      
         } else {
-            // запасной цвет
-            const brightness = Math.min(1, 1.2 / (distance * 0.3 + 0.5));
-            ctx.fillStyle = `rgb(${67 * brightness}, ${80 * brightness}, ${60 * brightness})`;
+            ctx.fillStyle = '#aaa';
             ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
         }
+        // подсветка
+        if (solidMap[cellY]?.[cellX] === 2) {
+            ctx.fillStyle = `rgba(213, 15, 0, 0.027)`;
+            ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
+        }
+        // затемнение
+        const fog = Math.min(1, 1.2 / (distance * 0.5 + 0.3));
+        if (fog < 1) {
+            ctx.fillStyle = `rgba(0,0,0,${1 - fog})`;
+            ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
+        }
+        if (side === 1) {
+            ctx.fillStyle = `rgba(0,0,0,0.2)`;
+            ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
+        }
+
+        // // запасной цвет
+        // const brightness = Math.min(1, 1.2 / (distance * 0.3 + 0.5));
+        // ctx.fillStyle = `rgb(${67 * brightness}, ${80 * brightness}, ${60 * brightness})`;
+        // ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
+        
     }
 
     for (let col = 0; col < w; col++) {
@@ -125,8 +145,10 @@ export function drawMinimap(ctx, w, h, solidMap, items, player){
         }
     }
     for (let item of items){
-        if (item.type === 'secret_road' || item.type === 'secret_door' || item.type === 'void_secret'){
+        if (item.type === 'secret_road' || item.type === 'secret_door' || item.type === 'void_secret' || item.type === 'true_door'){
             ctx.fillStyle = '#444';
+        } else if (item.type === 'fake_door'){
+            ctx.fillStyle = 'green';
         } else {
             ctx.fillStyle = `gold`;
         }

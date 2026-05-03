@@ -1,7 +1,7 @@
 // player.js
 import { WALL_OFFSET, MOVE_SPD, ROT_SPD } from './gameConfig.js'
 import { solidMap, signs, startX, startY } from './mapData.js'
-import { collectionItemAt, showMessage } from './ui.js'
+import { collectionItemAt, gameState, showMessage } from './ui.js'
 
 export let player = {x: startX, y: startY, dir: 0 };
 export let keys = {w: false, a: false, s: false, d: false};
@@ -57,6 +57,8 @@ export function tryMove(dx, dy) {
 }
 
 export function handleMovement(delta) {
+    if (gameState.gameActive === false) return;
+    
     let dx = 0; let dy = 0;
     if (keys.w) {
         dx += Math.cos(player.dir) * MOVE_SPD * delta;

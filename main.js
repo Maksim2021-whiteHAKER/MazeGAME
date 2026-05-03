@@ -1,5 +1,5 @@
 // main.js
-import { initMap, solidMap, items, startX, startY } from "./mapData.js";
+import { initMap, solidMap, items, startX, startY, signs } from "./mapData.js";
 import { player, handleMovement, keys } from "./player.js";
 import { draw3D } from "./render.js";
 import { updateUI, showMessage, gameState } from "./ui.js";
@@ -7,37 +7,115 @@ import { getTargetCell } from "./raycast.js";
 import { initInput } from "./input.js";
 import { startLoadingTextures } from "./loadTextures.js";
 
+let gameLoopId = null;
+let isPaused = false;
+
+window.restartGame = function() {
+    // Сбрасываем состояние
+    gameState.score = 0;
+    gameState.timeLeft = 60 * 1000;
+    gameState.gameActive = true;
+    gameState.mapHide = true;
+    isPaused = false;
+    
+    // Перезагружаем карту, предметы, таблички
+    initMap();
+    player.x = startX;
+    player.y = startY;
+    player.dir = 0;
+    keys.w = false; keys.s = false; keys.a = false; keys.d = false;
+    
+    updateUI();
+    document.getElementById('menuOverlay').style.display = 'none';
+};
+
+window.resumeGame = function() {
+    if (!gameState.gameActive) return;
+    isPaused = false;
+    document.getElementById('menuOverlay').style.display = 'none';
+};
+
+function showMenu(title, message, showResume = true) {
+    const overlay = document.getElementById('menuOverlay');
+    document.getElementById('menuTitle').innerText = title;
+    document.getElementById('menuMessage').innerText = message;
+    document.getElementById('resumeBtn').style.display = showResume ? 'block' : 'none';
+    overlay.style.display = 'flex';
+    isPaused = true;
+}
+
 function onRead() {
+    const target = getTargetCell();
+    if (target){
+        const {x, y} = target;
+        const sign = signs.find(s => s.x === x && s.y === y)
+        if (sign){
+            showMessage(sign.text);
+            return;
+        }
+    }
     if (window.nearSign) showMessage(window.nearSign.text);
 }
 
 function onOpen() {
     const target = getTargetCell();
-    if (target && target.distance < 2.5) {  // дальность открытия
-        const { x, y } = target;
-        if (solidMap[y][x] === 2) {
-            // Убираем стену
-            solidMap[y][x] = 0;
-            // Ищем предмет в items (если есть) и удаляем, начисляем бонус
-            const itemIndex = items.findIndex(it => it.x === x && it.y === y);
-            if (itemIndex !== -1) {
-                const item = items[itemIndex];
-                // Начисляем бонус (если нужно)
-                if (item.type === 'secret_road') gameState.score += item.value;
-                // if (item.type === 'secret_door') {
-                //     score += item.value;
-                //     gameActive = false;
-                //     showMessage(`Секретная дверь открыта! Победа! Очки: ${score}`);
-                // }
-                items.splice(itemIndex, 1);
-            }
-            showMessage("Секретная стена открыта!");
+    
+    if (!target || target.distance >= 2.5) { 
+        showMessage("Подойдите ближе к объекту");
+        return;
+    }
+
+    const { x, y } = target;
+    const wallType = solidMap[y][x]; // Тип клетки (0 - пусто, 1 - стена, 2 - секрет)
+
+    // Ищем предмет-дверь в этой клетке
+    const doorItem = items.find(it => it.x === x && it.y === y);
+
+    // ЛОГИКА ДЛЯ ДВЕРЕЙ (тип клетки может быть 1 или 2, но главное - наличие предмета)
+    if (doorItem) {
+        if (doorItem.type === 'true_door') { // Реальная дверь (желтый треугольник)
+            // solidMap[y][x] = 0; // Убираем стену (или оставляем как портал, если хочешь эффект)
+            gameState.score += doorItem.value;
+            gameState.gameActive = false; // временно для альфы
+            showMessage(`Альфа версия: ПОБЕДА, очков заработано: ${gameState.score}`)
+            showMenu('Победа!', `Альфа версия завершена. Ваш счёт: ${gameState.score}`, false);
+            // showMessage("Выход найден! Переход на следующий уровень...");           
+            // Здесь логика перехода на новый уровень
+            // loadNextLevel(); 
+            
+            // Удаляем дверь из списка предметов
+            items.splice(items.indexOf(doorItem), 1);
             updateUI();
-        } else {
-            showMessage("Это не секретная стена");
+            
+        } else if (doorItem.type === 'fake_door') { // Ловушка (темный треугольник)
+            gameState.score -= doorItem.value;
+            showMessage("Пока в разработке");
+            
+            // Опционально: телепортируем игрока назад или в бесконечный лабиринт
+            // player.x = startX; player.y = startY; 
+            
+            // Удаляем дверь, чтобы не спамить
+            items.splice(items.indexOf(doorItem), 1);
+            updateUI();
+            
+        } else if (doorItem.type === 'secret_road' || doorItem.type === 'void_secret') { // Секретные проходы
+            solidMap[y][x] = 0; // Открываем проход
+            gameState.score += doorItem.value;
+            showMessage("Секретный проход открыт!");
+            items.splice(items.indexOf(doorItem), 1);
+            updateUI();
         }
-    } else if (target && target.distance >= 2.5) {
-        showMessage("Подойдите ближе к стене");
+        
+    } 
+    // ЛОГИКА ДЛЯ СЕКРЕТНЫХ СТЕН (без предмета-двери, но тип клетки 2)
+    else if (wallType === 2) {
+        solidMap[y][x] = 0; // Просто убираем стену
+        showMessage("Секретная стена открыта!");
+        updateUI();
+    } 
+    // Если игрок нажал O на обычной стене или пустоте
+    else {
+        // showMessage("Здесь ничего нет");
     }
 }
 
@@ -80,22 +158,40 @@ window.onload = () => {
         resizeCanvas(canvas);
         // не нужно ничего пересоздавать – следующий кадр использует новые размеры
     });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (gameState.gameActive && !isPaused) {
+                showMenu('Пауза', 'Игра приостановлена', true);
+            } else if (isPaused) {
+                resumeGame();
+            }
+            e.preventDefault();
+        }
+    });
     
     initInput(onRead, onOpen);
 
     let lastTimestamp = 0;
     let lastTimerUpdate = 0;
     gameState.mapHide = true;
-
     function gameLoop(now) {
+        if (isPaused) {
+            requestAnimationFrame(gameLoop);
+            return;
+        }
         if (!lastTimestamp) lastTimestamp = now;
-        const delta = Math.min(100, now - lastTimestamp) / 1000; // секунды 
-        handleMovement(delta);
-        if (now - lastTimerUpdate >= 1000 && gameState.gameActive) {
+        const delta = Math.min(100, now - lastTimestamp) / 1000;
+        if (gameState.gameActive) {
+            handleMovement(delta);
+        }
+        // Таймер обновляется только если игра активна и не на паузе
+        if (now - lastTimerUpdate >= 1000 && gameState.gameActive && !isPaused) {
             gameState.timeLeft -= 1000;
             if (gameState.timeLeft <= 0) {
                 gameState.gameActive = false;
                 showMessage('Время вышло');
+                showMenu('Игра окончена', 'Время вышло!', false);
             }
             updateUI();
             lastTimerUpdate = now;

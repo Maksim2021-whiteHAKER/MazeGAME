@@ -5,27 +5,33 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
         <title>Лабиринт путаниц</title>
         <link rel="stylesheet" href="style/style.css">
+        <link rel="stylesheet" href="style/menu.css">
     </head>
     <body>
+        <div id="menuOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(4px);">
+            <h1 id="menuTitle">Game Over</h1>
+            <p id="menuMessage">Сообщение</p>
+            <button id="restartBtn" onclick="restartGame()" style="margin: 10px; padding: 10px 20px; font-size: 1.2rem;">Начать заново</button>
+            <button id="resumeBtn" onclick="resumeGame()" style="margin: 10px; padding: 10px 20px; font-size: 1.2rem;">Продолжить</button>
+        </div>
         <div class="info">
-          💎 Счёт: <span id="score">0</span>&nbsp;&nbsp; ⌛ Время: <span id="timer">00
+          💎 Счёт: <span id="score">0</span>&nbsp;&nbsp; ⌛ Время: <span id="timer">00</span>
         </div>
         <div class="controls-hint">
             🎮️ W/A/S/D || стрелки(←→↑↓) - движение\move
         </div>
         <div id="gameMessage" style="position: fixed; bottom: 20%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #ffd966; padding: 12px 24px;
-            border-radius: 8px; font-family: monospace; font-size: 18px; text-align: center; pointer-events: none; z-index: 1000; opacity: 0; transition: opacity 0.3s;
+            border-radius: 8px; font-family: monospace; font-size: 1.4rem; text-align: center; pointer-events: none; z-index: 1000; opacity: 0; transition: opacity 0.3s;
             backdrop-filter: blur(4px); border: 1px solid #ffd966; white-space: pre-line;">Текст сообщения</div>
         <div class="crosshair"></div>
 
-        
         <canvas id="gameCanvas"></canvas>
         <div id="touchControls" style="position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 20px; pointer-events: none; z-index: 20;">
             <div style="display: flex; gap: 20px; pointer-events: auto;">
-                <button class="touch-btn" data-key="w">⬆️</button>
-                <button class="touch-btn" data-key="s">⬇️</button>
-                <button class="touch-btn" data-key="a">⬅️</button>
-                <button class="touch-btn" data-key="d">➡️</button>
+                <button class="touch-btn" data-key="w">↑</button>
+                <button class="touch-btn" data-key="s">↓</button>
+                <button class="touch-btn" data-key="a">←</button>
+                <button class="touch-btn" data-key="d">→</button>
             </div>
             <div style="display: flex; gap: 20px; pointer-events: auto;">
                 <button id="readBtn" class="touch-btn" data-key="e">📖 E</button>

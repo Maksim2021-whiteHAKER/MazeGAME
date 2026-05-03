@@ -1,9 +1,14 @@
 // loadTextures.js
 export let textures = {};
 export let texturesLoaded = 0;
-export const totalTextures = 2; // сколько всего текстур загружаем
-export let floorImageData = null;
+export const totalTextures = 7; // сколько всего текстур загружаем
 export let wallImageData = null;
+export let doorImageData = null;
+export let gDoorImage = null;
+export let secretDoorImageData = null;
+export let openDoorImageData = null;
+export let signImageData = null;
+export let secretSignImageData = null
 
 export function prepareTexture(img) {
     const offCanvas = document.createElement('canvas');
@@ -18,12 +23,15 @@ export function loadTextures(name, url) {
     const img = new Image();
     img.onload = () => {
         texturesLoaded++;
-        if (name === 'floor') {
-            floorImageData = prepareTexture(img);
-        }
-        if (name === 'wall') {
-            wallImageData = prepareTexture(img);
-        }
+        switch (name){
+            case 'wall': wallImageData = prepareTexture(img); break;
+            case 'door': doorImageData = prepareTexture(img); break; // fake
+            case 'g_door': gDoorImage = prepareTexture(img); break; // real
+            case 'o_door': openDoorImageData = prepareTexture(img); break; // open doors
+            case 's_door': secretDoorImageData = prepareTexture(img); break;
+            case 'sign': signImageData = prepareTexture(img); break;
+            case 's_sign': secretSignImageData = prepareTexture(img); break;
+        } 
         if (texturesLoaded === totalTextures) {
             console.log('✅ Все текстуры загружены');
         }
@@ -35,5 +43,10 @@ export function loadTextures(name, url) {
 // Удобная функция для старта загрузки всех текстур
 export function startLoadingTextures() {
     loadTextures('wall', 'textures/wall.jpg');
-    loadTextures('floor', 'textures/floor.jpg');
+    loadTextures('door', 'textures/door.png'); // fake
+    loadTextures('g_door', 'textures/real_door.png')
+    loadTextures('s_door', 'textures/s_door.jpg');
+    loadTextures('o_door', 'textures/open_door.png')
+    loadTextures('sign', 'textures/sign.jpg');
+    loadTextures('s_sign', 'textures/s_sign.jpg');
 }

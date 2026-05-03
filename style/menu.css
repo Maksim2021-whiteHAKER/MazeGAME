@@ -1,0 +1,14 @@
+#menuOverlay {
+    display: none;
+    font-family: monospace;
+}
+#menuOverlay button {
+    cursor: pointer;
+    background: #ffd966;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+}
+#menuOverlay button:hover {
+    background: #ffc107;
+}

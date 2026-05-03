@@ -26,35 +26,30 @@ export function showMessage(text) {
     if (messageTimeout) clearTimeout(messageTimeout);
     messageTimeout = setTimeout(() => {
         msgDiv.style.opacity = '0';
-    }, 2500);
+    }, 4000);
 }
 
 export function collectionItemAt(x, y){
     const idx = items.findIndex(item => item.x === x && item.y === y)
     if (idx === -1) return false;
     const item = items[idx];
-    items.splice(idx, 1);
-
-    if (item.win){
-        gameState.gameActive = false;
-        showMessage(`Альфа версия: Победа! очки ${gameState.score}`)
+    items.splice(idx, 1); 
     
-    } else {
-        switch (item.type){
-            case 'coin': gameState.score += item.value; break;
-            case 'diamond': gameState.score += item.value; break;
-            case 'time': gameState.timeLeft += item.time * 1000; break;
-            case 'secret_road': { 
-                gameState.score += item.value;
-                solidMap[item.y][item.x] = 0;
-                break;
-            }
-            case 'fake_door': {
-                gameState.score -= item.value;
-                if (gameState.score < 0) gameState.score = 0;
-            } 
+    switch (item.type) {
+        case 'coin': gameState.score += item.value; break;
+        case 'diamond': gameState.score += item.value; break;
+        case 'time': gameState.timeLeft += item.time * 1000; break;
+        case 'secret_road': {
+            gameState.score += item.value;
+            solidMap[item.y][item.x] = 0;
+            break;
+        }
+        case 'fake_door': {
+            gameState.score -= item.value;
+            if (gameState.score < 0) gameState.score = 0;
         }
     }
+
     updateUI();
     return true;
 }

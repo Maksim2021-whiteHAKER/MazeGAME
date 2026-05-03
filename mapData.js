@@ -11,7 +11,7 @@ export function initMap(){
         "WWWWWWWCWWWWWWWRWWWW",
         "WWWWWWW WWWWWWWrWWWW",
         "WWWWWWW WWWrrrSrWWWW",
-        "WWWWWWW WWWrWWWWWWWW",
+        "WWGrrrR WWWrWWWWWWWW",
         "WWWWWWW WWWrrWWWWWWW",
         "WWWWWWW WWWWrWWWWWWW",
         "WWWWWWW WWWWrWWWWWWW",
@@ -21,8 +21,8 @@ export function initMap(){
         "WWWWWWWWWWWW WWWWWWW",
         "WWWWd   C    RrrTWWW",
         "WWWWWWWWWWWW WWWWWWW",
-        "WWN WWWWWWWW WWWWWWW",
-        "WWW    WWWWW WWWWWWW",
+        "WN     WWWWW WWWWWWW",
+        "WWWWWW WWWWW WWWWWWW",
         "WWWWWW WWWWW WWdWWWW",
         "WWP n    W        WW",
         "WWWWWWW       C WWWW",
@@ -39,13 +39,11 @@ export function initMap(){
         for (let x = 0; x < row.length; x++){
             const sh = row[x];
             let tile = 0;
-            if (sh === 'W') tile = 1;
-            else if (sh === 'R' || sh === 'S' || sh === 'D') tile = 2;
+            if (sh === 'W' || sh === 'N' || sh === 'G' || sh === 'D') tile = 1;
+            else if (sh === 'R' || sh === 'S' ) tile = 2;
             else tile = 0;
             solidMap[y][x] = tile;
-            if (sh === 'P'){
-                startX = x + 0.5;
-                startY = y + 0.5;
+            if (sh === 'P'){ startX = x + 0.5; startY = y + 0.5;
             } else if (sh === 'C'){
                 items.push({x, y, type: 'coin', value: 100});
             } else if (sh === 'd'){
