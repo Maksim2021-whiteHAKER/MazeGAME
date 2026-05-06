@@ -7,14 +7,76 @@ import { getTargetCell } from "./raycast.js";
 import { initInput } from "./input.js";
 import { startLoadingTextures } from "./loadTextures.js";
 
+async function lockLandscapeOrientation(){
+    try {
+        // полноэкранный режим (требуеться для lock())
+        const elem = document.documentElement;
+        if (elem.requestFullscreen){
+            await elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen){
+            await elem.webkitRequestFullscreen({navigationUI: 'hide'});
+        }
+
+        // блок ориентации
+        if (screen.orientation?.lock){
+            await screen.orientation.lock('landscape');
+            console.log('✅ Ориентация заблокирована: альбомная');
+        }
+    } catch (err){
+        console.warn('⚠️ Не удалось заблокировать ориентацию:', err);
+        showOrientationOverlay(); // Показываем визуальную подсказку
+    } 
+}
+
+function showOrientationOverlay(){
+    if (document.getElementById('orientation-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'orientation-overlay';
+    overlay.innerHTML = `
+        <div class="rotate-hint" style="max-width: 320px; text-align: center;">
+         <div style="font-size: 3rem; margin-bottom: 1rem;">📱🔁</div>
+         <p>Для лучшего опыта поверните устройство в горизонтальное положение</p>
+         <button id="continue-anyway" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer;">играть как есть(удачи)</button>
+        </div>`;
+    document.body.append(overlay);
+    
+    // Кнопка "Играть как есть"
+    document.getElementById('continue-anyway')?.addEventListener('click', () => {
+        overlay.style.display = 'none';
+    });
+
+    // Авто-скрытие при повороте в ландшафт
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > window.innerHeight) {
+            overlay.style.display = 'none';
+        }
+    }, { once: false });
+}
+
+function hideOrientationOverlay() {
+    const overlay = document.getElementById('orientation-overlay');
+    if (overlay) overlay.style.display = 'none';
+}  
+
 let gameLoopId = null;
 let isPaused = false;
+let menu = document.getElementById('mainMenu');
+
+function hideShowMainMenu(on){
+    if (on === 'show'){
+        menu.style.display = 'flex';
+    } else if (on === 'off'){
+        menu.style.display = 'none';
+    }
+}
 
 window.restartGame = function() {
     // Сбрасываем состояние
     gameState.score = 0;
     gameState.timeLeft = 60 * 1000;
-    gameState.gameActive = true;
+    gameState.gameActive = false;
+    hideShowMainMenu('show');
     gameState.mapHide = true;
     isPaused = false;
     
@@ -74,10 +136,9 @@ function onOpen() {
     // ЛОГИКА ДЛЯ ДВЕРЕЙ (тип клетки может быть 1 или 2, но главное - наличие предмета)
     if (doorItem) {
         if (doorItem.type === 'true_door') { // Реальная дверь (желтый треугольник)
-            // solidMap[y][x] = 0; // Убираем стену (или оставляем как портал, если хочешь эффект)
+            solidMap[y][x] = 3; // Убираем стену (или оставляем как портал, если хочешь эффект)
             gameState.score += doorItem.value;
             gameState.gameActive = false; // временно для альфы
-            showMessage(`Альфа версия: ПОБЕДА, очков заработано: ${gameState.score}`)
             showMenu('Победа!', `Альфа версия завершена. Ваш счёт: ${gameState.score}`, false);
             // showMessage("Выход найден! Переход на следующий уровень...");           
             // Здесь логика перехода на новый уровень
@@ -145,10 +206,31 @@ function resizeCanvas(canvas) {
 }
 
 window.onload = () => {
+    let startBtn = document.getElementById('startBtn'); 
+    hideShowMainMenu('show');
+    gameState.gameActive = false;
     startLoadingTextures();
     initMap();
     player.x = startX;
     player.y = startY;
+
+    startBtn.addEventListener('click', async () => {
+        await lockLandscapeOrientation();
+        hideOrientationOverlay();
+
+        hideShowMainMenu('off');
+        gameState.gameActive = true;
+        gameState.score = 0;
+        gameState.timeLeft = 60 * 1000;
+        updateUI();
+        player.x = startX;
+        player.y = startY;
+        player.dir = 0;
+        keys.w = false; keys.a = false; keys.s = false; keys.d = false;
+        initMap();
+        lastTimestamp = 0;
+        lastTimerUpdate = 0;
+    })
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');

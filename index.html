@@ -2,7 +2,8 @@
 <html lang="ru">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta name="apple-mobile-web-app-capable" content="yes">
         <title>Лабиринт путаниц</title>
         <link rel="stylesheet" href="style/style.css">
         <link rel="stylesheet" href="style/menu.css">
@@ -14,8 +15,12 @@
             <button id="restartBtn" onclick="restartGame()" style="margin: 10px; padding: 10px 20px; font-size: 1.2rem;">Начать заново</button>
             <button id="resumeBtn" onclick="resumeGame()" style="margin: 10px; padding: 10px 20px; font-size: 1.2rem;">Продолжить</button>
         </div>
+        <div id="mainMenu" class="startMenu">
+            <h1 style="color: gold; font-family: monospace;">Лабиринт путаниц</h1>
+            <button id="startBtn" class="menuBtn">Начать игру</button>
+        </div>
         <div class="info">
-          💎 Счёт: <span id="score">0</span>&nbsp;&nbsp; ⌛ Время: <span id="timer">00</span>
+          💎 Счёт: <span id="score">0</span>&nbsp;&nbsp; ⌛ Время: <span id="timer">00:00</span>
         </div>
         <div class="controls-hint">
             🎮️ W/A/S/D || стрелки(←→↑↓) - движение\move

@@ -9,8 +9,8 @@ export function initInput(onRead, onOpen){
             case 'a': case 'ArrowLeft': keys.a = true; break
             case 's': case 'ArrowDown': keys.s = true; break
             case 'd': case 'ArrowRight': keys.d = true; break
-            case 'e': onRead?.(); break;
-            case 'o': onOpen?.(); break;
+            case 'e': case 'у': onRead?.(); break;
+            case 'o': case 'щ': onOpen?.(); break;
         }
         e.preventDefault();
     });
