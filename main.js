@@ -6,6 +6,7 @@ import { updateUI, showMessage, gameState } from "./ui.js";
 import { getTargetCell } from "./raycast.js";
 import { initInput } from "./input.js";
 import { startLoadingTextures } from "./loadTextures.js";
+import { setMaxDist } from "./gameConfig.js";
 
 async function lockLandscapeOrientation(){
     try {
@@ -198,27 +199,47 @@ function onOpen() {
 
 function resizeCanvas(canvas) {
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    // Логическое разрешение 16:9
-    let LOGIC_WIDTH = isMobile ? 640 : 800;
-    let LOGIC_HEIGHT = isMobile ? 360 : 450;
-    
+    const sw = window.innerWidth; // s = screen 
+    const sh = window.innerHeight;
+    const aspect = sw / sh;
+    console.log(`${sw} ${sh}: ${aspect}`)
+
+    let LOGIC_WIDTH, LOGIC_HEIGHT;
+
+    if (isMobile){
+        setMaxDist(6);
+        // для телефонов бывает разное соотношение, по этому для производительности ограничим ширину до 720 пкс
+        LOGIC_WIDTH = Math.min(720, Math.floor(sw * 0.9));
+        LOGIC_HEIGHT = Math.floor(LOGIC_WIDTH / aspect);
+        // чтобы не терять качество не опускаемся ниже 360
+        if (LOGIC_HEIGHT < 360){
+            LOGIC_HEIGHT = 360;
+            LOGIC_WIDTH = Math.floor(LOGIC_HEIGHT * aspect);
+        }
+    } else {
+        // пк 
+        setMaxDist(8);
+        LOGIC_WIDTH = 854;
+        LOGIC_HEIGHT = 480;
+    }
+
+    // console.log(`Логические ш/в: ${LOGIC_WIDTH} x ${LOGIC_HEIGHT}`);
+   
     canvas.width = LOGIC_WIDTH;
     canvas.height = LOGIC_HEIGHT;
     
     // Физический размер на экране (масштабируем, сохраняя пропорции)
-    const maxWidth = window.innerWidth - 40;
-    const maxHeight = window.innerHeight - 150;
-    let displayWidth = LOGIC_WIDTH;
-    let displayHeight = LOGIC_HEIGHT;
-    
-    const scaleX = maxWidth / LOGIC_WIDTH;
-    const scaleY = maxHeight / LOGIC_HEIGHT;
+    const maxDisplayWidth = sw - 40;
+    const maxDisplayHeight = sh - 150;
+        
+    const scaleX = maxDisplayWidth / LOGIC_WIDTH;
+    const scaleY = maxDisplayHeight / LOGIC_HEIGHT;
     const scale = Math.min(scaleX, scaleY, 2.5); // максимум 2.5x, чтобы не было излишне крупно
-    displayWidth = Math.floor(LOGIC_WIDTH * scale);
-    displayHeight = Math.floor(LOGIC_HEIGHT * scale);
-    
-    canvas.style.width = `${displayWidth}px`;
-    canvas.style.height = `${displayHeight}px`;
+
+    canvas.style.width = `${Math.floor(LOGIC_WIDTH * scale)}px`;
+    canvas.style.height = `${Math.floor(LOGIC_HEIGHT * scale)}px`;
+
+    // console.log(`ш/в: ${canvas.style.width = Math.floor(LOGIC_WIDTH * scale)}x${canvas.style.height = Math.floor(LOGIC_HEIGHT * scale)}`)
 }
 
 document.getElementById('restartBtn').addEventListener('click', () => window.restartGame());
