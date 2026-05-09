@@ -9,6 +9,7 @@ const wrap = (x) => ((x % 1) + 1) % 1;
 
 // проверяет, виден ли объект в точке (tx, ty) из (px, py) на карте solidMap
 function isVisible(px, py, tx, ty, solidMap){
+    if (!solidMap || !solidMap.length || !solidMap[0].length) return true;
     const dx = tx - px;
     const dy = ty - py
     const distance = Math.hypot(dx, dy);

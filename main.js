@@ -221,6 +221,10 @@ function resizeCanvas(canvas) {
     canvas.style.height = `${displayHeight}px`;
 }
 
+document.getElementById('restartBtn').addEventListener('click', () => window.restartGame());
+document.getElementById('resumeBtn').addEventListener('click', () => window.resumeGame());
+document.getElementById('backToMainMenu').addEventListener('click', () => window.mainMenuGame())
+
 window.onload = () => {
     let startBtn = document.getElementById('startBtn'); 
     hideShowMainMenu('show');
