@@ -71,12 +71,28 @@ function hideShowMainMenu(on){
     }
 }
 
-window.restartGame = function() {
-    // Сбрасываем состояние
+window.mainMenuGame = function(){
     gameState.score = 0;
     gameState.timeLeft = 60 * 1000;
     gameState.gameActive = false;
     hideShowMainMenu('show');
+    gameState.mapHide = true;
+    isPaused = false;
+
+    initMap();
+    player.x = startX;
+    player.y = startY;
+    player.dir = 0;
+    keys.w = false; keys.s = false; keys.a = false; keys.d = false;
+    updateUI();
+    document.getElementById('menuOverlay').style.display = 'none';
+}
+
+window.restartGame = function(){
+    // Сбрасываем состояние
+    gameState.score = 0;
+    gameState.timeLeft = 60 * 1000;
+    gameState.gameActive = true;
     gameState.mapHide = true;
     isPaused = false;
     
@@ -139,7 +155,7 @@ function onOpen() {
             solidMap[y][x] = 3; // Убираем стену (или оставляем как портал, если хочешь эффект)
             gameState.score += doorItem.value;
             gameState.gameActive = false; // временно для альфы
-            showMenu('Победа!', `Альфа версия завершена. Ваш счёт: ${gameState.score}`, false);
+            showMenu('Победа!', `Альфа версия 2 завершена. Ваш счёт: ${gameState.score}`, false);
             // showMessage("Выход найден! Переход на следующий уровень...");           
             // Здесь логика перехода на новый уровень
             // loadNextLevel(); 

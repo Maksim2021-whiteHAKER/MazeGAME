@@ -1,7 +1,7 @@
 // loadTextures.js
 export let textures = {};
 export let texturesLoaded = 0;
-export const totalTextures = 7; // сколько всего текстур загружаем
+export const totalTextures = 9; // сколько всего текстур загружаем
 export let wallImageData = null;
 export let doorImageData = null;
 export let gDoorImage = null;
@@ -9,6 +9,8 @@ export let secretDoorImageData = null;
 export let openDoorImageData = null;
 export let signImageData = null;
 export let secretSignImageData = null
+export let coinImageData = null;
+export let diamondImageData = null;
 
 export function prepareTexture(img) {
     const offCanvas = document.createElement('canvas');
@@ -31,6 +33,8 @@ export function loadTextures(name, url) {
             case 's_door': secretDoorImageData = prepareTexture(img); break;
             case 'sign': signImageData = prepareTexture(img); break;
             case 's_sign': secretSignImageData = prepareTexture(img); break;
+            case 'coin': coinImageData = prepareTexture(img); break;
+            case 'diamond': diamondImageData = prepareTexture(img); break;
         } 
         if (texturesLoaded === totalTextures) {
             console.log('✅ Все текстуры загружены');
@@ -49,4 +53,6 @@ export function startLoadingTextures() {
     loadTextures('o_door', 'textures/open_door.png')
     loadTextures('sign', 'textures/sign.jpg');
     loadTextures('s_sign', 'textures/s_sign.jpg');
+    loadTextures('coin', 'textures/coin.png');
+    loadTextures('diamond', 'textures/diamond.png');
 }

@@ -3,6 +3,7 @@
     font-family: monospace;
 }
 #menuOverlay button {
+    width: 220px;
     cursor: pointer;
     background: #ffd966;
     border: none;

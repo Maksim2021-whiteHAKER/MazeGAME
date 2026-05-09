@@ -1,11 +1,71 @@
 // render.js
 import { halfFOV, maxDist, FOV } from "./gameConfig.js";
 import { doorImageData, secretDoorImageData, secretSignImageData, signImageData, textures, wallImageData } from "./loadTextures.js"
-import { items, signs } from "./mapData.js";
+import { items, signs, solidMap } from "./mapData.js";
 import { gameState } from "./ui.js";
 import { castRayWithSide } from "./raycast.js";
 
 const wrap = (x) => ((x % 1) + 1) % 1;
+
+// проверяет, виден ли объект в точке (tx, ty) из (px, py) на карте solidMap
+function isVisible(px, py, tx, ty, solidMap){
+    const dx = tx - px;
+    const dy = ty - py
+    const distance = Math.hypot(dx, dy);
+    const steps = Math.max(1, Math.floor(distance * 8)) // ~8 проверок на клетку
+    const stepX = dx / steps;
+    const stepY = dy / steps;
+    let x = px, y = py;
+    for (let i = 0; i <= steps; i++){
+        const mx = Math.floor(x);
+        const my = Math.floor(y);
+        if (mx < 0 || my < 0 || mx >= solidMap[0].length || my >= solidMap.length) break;
+        // Если клетка - стена(1 или 2) или закрытая дверь (но не открытая = 3) то стена
+        if (solidMap[my][mx] === 1 || solidMap[my][mx] === 2) return false;
+        x += stepX;
+        y += stepY;
+    }
+    return true;
+}
+
+function drawSprites(ctx, w, h, player, items, solidMap){
+    const visibleItems = items.filter(it => it.type === 'coin' || it.type === 'diamond');
+    if (visibleItems.length === 0) return;
+
+    // Сортируем от дальних к ближним (чтобы ближние перекрывали дальние)
+    visibleItems.sort((a, b) => {
+        const da = Math.hypot(a.x - player.x, a.y - player.y);
+        const db = Math.hypot(b.x - player.x, b.y - player.y);
+        return db - da;
+    });
+
+    for (const item of visibleItems){
+        const itemX = item.x + 0.5;
+        const itemY = item.y + 0.5;
+        const dx = item.x + 0.5 - player.x;
+        const dy = item.y + 0.5 - player.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 0.2) continue;
+
+        // угол относительно направления игрока
+        let angle = Math.atan2(dy, dx) - player.dir;
+        while (angle > Math.PI) angle -= 2 * Math.PI;
+        while (angle < -Math.PI) angle += 2 * Math.PI;
+        if (Math.abs(angle) > FOV / 2) continue;
+
+        // Проверка: нет ли стены между игроком и предметом
+        if (!isVisible(player.x, player.y, itemX, itemY, solidMap)) continue;
+
+        const size = (1 / (dist + 0.001)) * h * 0.4;
+        const spriteX = (angle / (FOV / 2)) * w / 2 + w / 2;
+        const spriteY = h / 2 - size / 2;
+
+        let tex = item.type === 'coin' ? textures['coin'] : textures['diamond'];
+        if (!tex || !tex.complete || tex.naturalWidth === 0) continue;
+
+        ctx.drawImage(tex, spriteX - size / 2, spriteY, size, size);
+    }
+}
 
 function getWallTextureForCell(cellX, cellY){
     const doorItem = items.find(it => it.x === cellX && it.y === cellY && ( it.type === 'fake_door' || it.type === 'true_door' || it.type === 'secret_door' ))
@@ -122,6 +182,8 @@ export function draw3D(canvas, ctx, solidMap, player) {
             ctx.fillRect(col, 0, 1, wallTop);
         }
     }
+
+    drawSprites(ctx, w, h, player, items, solidMap);
     
     if (gameState.mapHide){
         drawMinimap(ctx, w, h, solidMap, items, player);
