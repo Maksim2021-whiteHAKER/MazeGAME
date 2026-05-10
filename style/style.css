@@ -157,22 +157,25 @@ canvas {
     text-align: center;
     padding: 2rem;
     font-family: sans-serif;
-  }
-  .rotate-hint {
+}
+
+.rotate-hint {
     max-width: 320px;
     animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
+}
+
+@keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
-  }
-  /* Скрываем оверлей на десктопе */
-  @media (min-width: 1024px) {
-    #orientation-overlay { display: none !important; }
-  }
+}
 
-  /* Адаптивное сообщение */
-  .game-message {
+/* Скрываем оверлей на десктопе */
+@media (min-width: 1024px) {
+  #orientation-overlay { display: none !important; }
+}
+
+/* Адаптивное сообщение */
+.game-message {
     position: fixed;
     bottom: 20%;
     left: 50%;
@@ -192,13 +195,22 @@ canvas {
     border: 1px solid #ffd966;
     white-space: pre-line;
     max-width: 90vw;
-  }
+}
 
 @media (max-width: 768px) {
     .game-message {
-        font-size: 0.75rem;
+        font-size: 0.4rem;
         padding: 6px 12px;
         bottom: 25%;
         max-width: 85vw;
     }
+}
+
+@media (max-width: 900px) {
+    .game-message {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        bottom: 25%;
+        max-width: 50vw;
+    } 
 }
