@@ -30,7 +30,10 @@ function isVisible(px, py, tx, ty, solidMap){
 }
 
 function drawSprites(ctx, w, h, player, items, solidMap){
-    const visibleItems = items.filter(it => it.type === 'coin' || it.type === 'diamond');
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const MAX_SPRITES_DIST = isMobile ? 4.5 : 6.0;
+
+    const visibleItems = items.filter(it => it.type === 'coin' || it.type === 'diamond' || it.type === 'time');
     if (visibleItems.length === 0) return;
 
     // Сортируем от дальних к ближним (чтобы ближние перекрывали дальние)
@@ -46,7 +49,7 @@ function drawSprites(ctx, w, h, player, items, solidMap){
         const dx = item.x + 0.5 - player.x;
         const dy = item.y + 0.5 - player.y;
         const dist = Math.hypot(dx, dy);
-        if (dist < 0.2) continue;
+        if (dist < 0.2 || dist > MAX_SPRITES_DIST) continue;
 
         // угол относительно направления игрока
         let angle = Math.atan2(dy, dx) - player.dir;
@@ -61,7 +64,14 @@ function drawSprites(ctx, w, h, player, items, solidMap){
         const spriteX = (angle / (FOV / 2)) * w / 2 + w / 2;
         const spriteY = h / 2 - size / 2;
 
-        let tex = item.type === 'coin' ? textures['coin'] : textures['diamond'];
+        let tex;
+
+        switch (item.type) {
+            case 'coin': tex = textures['coin']; break
+            case 'diamond': tex = textures['diamond']; break
+            case 'time': tex = textures['time']; break
+
+        } 
         if (!tex || !tex.complete || tex.naturalWidth === 0) continue;
 
         ctx.drawImage(tex, spriteX - size / 2, spriteY, size, size);
@@ -137,7 +147,7 @@ export function draw3D(canvas, ctx, solidMap, player) {
         }
         // подсветка
         if (solidMap[cellY]?.[cellX] === 2) {
-            ctx.fillStyle = `rgba(213, 15, 0, 0.027)`;
+            ctx.fillStyle = `rgba(213, 15, 0, 0.035)`;
             ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
         }
         // затемнение

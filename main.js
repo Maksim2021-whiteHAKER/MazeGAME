@@ -156,7 +156,7 @@ function onOpen() {
             solidMap[y][x] = 3; // Убираем стену (или оставляем как портал, если хочешь эффект)
             gameState.score += doorItem.value;
             gameState.gameActive = false; // временно для альфы
-            showMenu('Победа!', `Альфа версия 2 завершена. Ваш счёт: ${gameState.score}`, false);
+            showMenu('Победа!', `Альфа версия 7 завершена. Ваш счёт: ${gameState.score}`, false);
             // showMessage("Выход найден! Переход на следующий уровень...");           
             // Здесь логика перехода на новый уровень
             // loadNextLevel(); 
