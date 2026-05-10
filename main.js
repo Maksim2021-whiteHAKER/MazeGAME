@@ -262,7 +262,7 @@ window.onload = () => {
         hideShowMainMenu('off');
         gameState.gameActive = true;
         gameState.score = 0;
-        gameState.timeLeft = 60 * 1000;
+        gameState.timeLeft = 90 * 1000;
         updateUI();
         player.x = startX;
         player.y = startY;

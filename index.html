@@ -32,16 +32,28 @@
         <div class="crosshair"></div>
 
         <canvas id="gameCanvas"></canvas>
-        <div id="touchControls" style="position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 20px; pointer-events: none; z-index: 20;">
-            <div style="display: flex; gap: 20px; pointer-events: auto;">
-                <button class="touch-btn" data-key="w">↑</button>
-                <button class="touch-btn" data-key="s">↓</button>
-                <button class="touch-btn" data-key="a">←</button>
-                <button class="touch-btn" data-key="d">→</button>
+
+        <div id="touchControls" class="touchControlsCs">
+            <div class="dpad">
+                <div class="dpad-row">
+                    <div class="dpad-empty"></div>
+                    <button class="touch-btn" data-key="w">↑</button>
+                    <div class="dpad-empty"></div>
+                </div>
+                <div class="dpad-row">
+                    <button class="touch-btn" data-key="a">←</button>
+                    <div class="dpad-empty"></div>
+                    <button class="touch-btn" data-key="d">→</button>
+                </div>
+                <div class="dpad-row">
+                    <div class="dpad-empty"></div>
+                    <button class="touch-btn" data-key="s">↓</button>
+                    <div class="dpad-empty"></div>                    
+                </div>
             </div>
-            <div style="display: flex; gap: 20px; pointer-events: auto;">
-                <button id="readBtn" class="touch-btn" data-key="e">📖 E</button>
-                <button id="openBtn" class="touch-btn" data-key="o">🔓 O</button>
+            <div class="action-btns">
+                <button id="readBtn" class="touch-btn" data-key="e">📖E</button>
+                <button id="openBtn" class="touch-btn" data-key="o">🔓O</button>
             </div>
         </div>
         <script type="module" src="main.js"></script>

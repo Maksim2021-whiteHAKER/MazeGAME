@@ -108,6 +108,44 @@ canvas {
     .touch-btn { width: 50px; height: 50px; font-size: 20px; }
 }
 
+.touchControlsCs {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.dpad {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 80px;
+    padding: 5px;
+    pointer-events: auto;
+    transform: scale(0.8);
+}
+
+.dpad-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.dpad-empty {
+    width: 60px;
+    height: 60px;
+    visibility: hidden;
+}
+
+.action-btns {
+    display: flex;
+    gap: 20px;
+    pointer-events: auto;
+}
+
 /* меню главное */
 #mainMenu{
     position: absolute;
