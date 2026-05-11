@@ -202,7 +202,7 @@ function resizeCanvas(canvas) {
     const sw = window.innerWidth; // s = screen 
     const sh = window.innerHeight;
     const aspect = sw / sh;
-    console.log(`ш/в: ${sw} ${sh}: ${aspect}`)
+    // console.log(`ш/в: ${sw} ${sh}: ${aspect}`)
 
     let LOGIC_WIDTH, LOGIC_HEIGHT;
 
@@ -210,13 +210,13 @@ function resizeCanvas(canvas) {
         setMaxDist(6);
         // для телефонов бывает разное соотношение, по этому для производительности ограничим ширину до 720 пкс
         LOGIC_WIDTH = Math.min(800, Math.floor(sw * 0.9));
-        console.log(`ш: ${LOGIC_WIDTH}`);
+        // console.log(`ш: ${LOGIC_WIDTH}`);
         LOGIC_HEIGHT = Math.floor(LOGIC_WIDTH / aspect);
         // чтобы не терять качество не опускаемся ниже 360
         if (LOGIC_HEIGHT < 360){
             LOGIC_HEIGHT = 360;
             LOGIC_WIDTH = Math.floor(LOGIC_HEIGHT * aspect);
-            console.log(`< 360 ш: ${LOGIC_WIDTH}`);
+            // console.log(`< 360 ш: ${LOGIC_WIDTH}`);
         }
     } else {
         // пк 
@@ -232,7 +232,7 @@ function resizeCanvas(canvas) {
     
     // Физический размер на экране (масштабируем, сохраняя пропорции)
     const maxDisplayWidth = sw - 20;
-    const maxDisplayHeight = sh - 90;
+    const maxDisplayHeight = sh - 75;
         
     const scaleX = maxDisplayWidth / LOGIC_WIDTH;
     const scaleY = maxDisplayHeight / LOGIC_HEIGHT;
