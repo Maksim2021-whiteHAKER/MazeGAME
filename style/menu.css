@@ -1,7 +1,73 @@
+#mainMenu {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.4)),
+    url('../textures/bg_.webp') center/cover fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+}
+
+#mainMenu h1{
+    position: absolute;
+    top: 20%;
+    margin: 0 0 10px 0;
+    padding: 0;
+    text-align: center;
+    font-size: 5.2rem;
+    color: orange;
+    -webkit-text-stroke: #ff0a00 2px;
+    font-family: monospace;
+    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.9);
+}
+
+#mainMenu h5 {
+    position: absolute;
+    top: 30%;
+    margin: 0 0 10px 0;
+    padding: 0;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #ffc107;
+    -webkit-text-stroke: white 0.4px;
+    font-family: monospace;
+}
+
+/* меню главное */
+.menuBtn{
+    width: 220px;
+    /* margin: 10px; */
+    background-color: #ffbbaa;
+    border: solid 2px #ff0a00;
+    padding: 15px 30px;
+    font-size: 24px;
+    border-radius: 32px;
+    transition: backgroud-color 0.3s;
+}
+
+.menuBtn:hover{
+    background-color: brown;
+    transform: scale(0.9);
+    border: solid 2px orange;
+}
+
+.overlay_btn-menu{
+    margin: 10px; 
+    padding: 10px 20px 10px; 
+    font-size: 1.2rem;
+}
+
 #menuOverlay {
     display: none;
     font-family: monospace;
 }
+
 #menuOverlay button {
     width: 220px;
     cursor: pointer;
@@ -10,6 +76,7 @@
     border-radius: 8px;
     font-weight: bold;
 }
+
 #menuOverlay button:hover {
     background: #ffc107;
 }
@@ -29,7 +96,7 @@
     position: relative;
     top: 50%;
     transform: translateY(-50%);
-    border: 1px solid #00ffff;
+    border: 1px solid #ff0a00;
     max-width: 850px;
     margin: 0 auto;
     padding: 2rem;
@@ -77,4 +144,17 @@
 
 .font-size {
     font-size: 18px;
+}
+
+@media (max-width: px) {
+    #mainMenu h1 {
+        font-size: 1.4rem;
+        top: 5%;
+        -webkit-text-stroke: #ff0a00 0.7px;
+    }
+
+    #mainMenu h5 {
+        font-size: 0.8rem;
+        top: 13%
+    }
 }
