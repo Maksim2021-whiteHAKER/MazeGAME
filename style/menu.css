@@ -146,7 +146,7 @@
     font-size: 18px;
 }
 
-@media (max-width: px) {
+@media (max-width: 673px) {
     #mainMenu h1 {
         font-size: 1.4rem;
         top: 5%;
@@ -155,6 +155,19 @@
 
     #mainMenu h5 {
         font-size: 0.8rem;
+        top: 13%
+    }
+}
+
+@media (max-width: 764px) {
+    #mainMenu h1 {
+        font-size: 2.3rem;
+        top: 2%;
+        -webkit-text-stroke: #ff0a00 0.7px;
+    }
+
+    #mainMenu h5 {
+        font-size: 1.2rem;
         top: 13%
     }
 }
