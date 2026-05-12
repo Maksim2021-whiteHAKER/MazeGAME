@@ -55,7 +55,7 @@ export function startLoadingTextures() {
     loadTextures('o_door', 'textures/open_door.png')
     loadTextures('sign', 'textures/sign.jpg');
     loadTextures('s_sign', 'textures/s_sign.jpg');
-    loadTextures('coin', 'textures/coin.png');
-    loadTextures('diamond', 'textures/diamond.png');
+    loadTextures('coin', 'textures/coin512.png');
+    loadTextures('diamond', 'textures/diamond512.png');
     loadTextures('time', 'textures/plus_time.png');
 }

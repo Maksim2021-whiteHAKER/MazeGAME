@@ -13,3 +13,68 @@
 #menuOverlay button:hover {
     background: #ffc107;
 }
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 101;
+}
+
+.modal-content {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 1px solid #00ffff;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #1a1a1a;
+    border-radius: 15px;
+    color: #fff;
+    text-align: center;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #00ffff;
+    transition: color 0.3s;
+    z-index: 1001;
+}
+
+.close-btn:hover {
+    color: #ff0000;
+}
+
+.creator-info {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.creator-details {
+    flex: 1;
+    text-align: left;
+}
+
+.creator-details a {
+    color: #00ffff;
+    text-decoration: none;
+}
+
+.creator-details a:hover {
+    text-decoration: underline;
+}
+
+.font-size {
+    font-size: 18px;
+}

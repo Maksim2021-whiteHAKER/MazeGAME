@@ -123,6 +123,33 @@ function showMenu(title, message, showResume = true) {
     isPaused = true;
 }
 
+// Функции управления модалками
+function showModal(modal){
+    console.log(modal)
+    if (modal){
+        // Скрываем все модалки перед показом новой
+        document.querySelectorAll(['.modal', '.modal_set']).forEach(m => m.style.display = 'none');
+        modal.style.display = 'block';       
+    }
+}
+
+function hideModals() {
+    document.querySelectorAll(['.modal','.modal_set','.wheel-container']).forEach(m => m.style.display = 'none');
+}
+
+// Закрытие по клику вне окна
+window.addEventListener('click', (event) => {
+    if ((event.target.classList.contains('modal') || event.target.classList.contains('modal_set')) && !event.target.closest('#pause-menu')) {
+        hideModals();
+    }
+});
+
+document.querySelectorAll(['.close-btn', '.close-btnWF']).forEach(btn => {
+    if (btn.className === 'close-btn'){
+        btn.addEventListener('click', hideModals);
+    }
+});
+
 function onRead() {
     const target = getTargetCell();
     if (target){
@@ -244,9 +271,12 @@ function resizeCanvas(canvas) {
     // console.log(`ш/в: ${canvas.style.width = Math.floor(LOGIC_WIDTH * scale)}x${canvas.style.height = Math.floor(LOGIC_HEIGHT * scale)}`)
 }
 
+const creatorModal = document.getElementById('aboutOurs');
+
 document.getElementById('restartBtn').addEventListener('click', () => window.restartGame());
 document.getElementById('resumeBtn').addEventListener('click', () => window.resumeGame());
 document.getElementById('backToMainMenu').addEventListener('click', () => window.mainMenuGame())
+document.getElementById('aboutOursBtn').addEventListener('click', () => showModal(creatorModal));
 
 window.onload = () => {
     let startBtn = document.getElementById('startBtn'); 
