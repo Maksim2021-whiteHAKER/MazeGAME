@@ -8,6 +8,8 @@ import { initInput } from "./input.js";
 import { startLoadingTextures } from "./loadTextures.js";
 import { setMaxDist } from "./gameConfig.js";
 
+const menuBtn = document.getElementById('menuBtn');
+
 async function lockLandscapeOrientation(){
     try {
         // полноэкранный режим (требуеться для lock())
@@ -123,6 +125,12 @@ function showMenu(title, message, showResume = true) {
     isPaused = true;
 }
 
+function showMenuBtn(show){
+    if (menuBtn) {
+        menuBtn.style.display = show ? 'flex' : 'none';
+    }
+}
+
 // Функции управления модалками
 function showModal(modal){
     console.log(modal)
@@ -224,6 +232,22 @@ function onOpen() {
     }
 }
 
+function applyHandednessLayout() {
+    const container = document.getElementById('touchControls');
+    const conBtn = document.getElementById('act-btns');
+    const readBtn = document.getElementById('readBtn');
+    const openBtn = document.getElementById('openBtn');
+
+    if (!container || !readBtn || !openBtn) return;
+
+    isRightHand === true ? container.classList.add('right-hand') : container.classList.remove('right-hand');
+    isRightHand === true ? conBtn.classList.add('right-hand') : conBtn.classList.remove('right-hand');
+    isRightHand === true ? readBtn.style.transform = 'rotateY(180deg)' : readBtn.style.transform = 'rotateY(0)';
+    isRightHand === true ? openBtn.style.transform = 'rotateY(180deg)' : openBtn.style.transform = 'rotateY(0)';
+    isRightHand === true ? readBtn.textContent = 'E📖' : readBtn.textContent = '📖E';
+    isRightHand === true ? openBtn.textContent = 'O🔓' : openBtn.textContent = '🔓O';
+}
+
 function resizeCanvas(canvas) {
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const sw = window.innerWidth; // s = screen 
@@ -272,13 +296,38 @@ function resizeCanvas(canvas) {
 }
 
 const creatorModal = document.getElementById('aboutOurs');
+const settingsModal = document.getElementById('settingsModal')
+const rightHandToggle = document.getElementById('rightHandToggle')
+let isRightHand = true;
+const saved = localStorage.getItem('Hand')
+if (saved !== null){
+    isRightHand = saved === 'true';
+    if (rightHandToggle) rightHandToggle.checked = isRightHand;
+}
+
+if (rightHandToggle) {
+    rightHandToggle.addEventListener('change', (e) => {
+        isRightHand = e.target.checked;
+        localStorage.setItem('Hand', isRightHand)
+        applyHandednessLayout();
+    })
+}
 
 document.getElementById('restartBtn').addEventListener('click', () => window.restartGame());
 document.getElementById('resumeBtn').addEventListener('click', () => window.resumeGame());
-document.getElementById('backToMainMenu').addEventListener('click', () => window.mainMenuGame())
+document.getElementById('backToMainMenu').addEventListener('click', () => window.mainMenuGame());
 document.getElementById('aboutOursBtn').addEventListener('click', () => showModal(creatorModal));
+document.getElementById('settingBtn').addEventListener('click', () => showModal(settingsModal));
+menuBtn.addEventListener('click', () => {
+    if (gameState.gameActive && !isPaused) {
+        showMenu('Пауза', 'Игра приостановлена', true);
+    } else if (isPaused) {
+        resumeGame();
+    }
+})
 
 window.onload = () => {
+    applyHandednessLayout();
     let startBtn = document.getElementById('startBtn'); 
     hideShowMainMenu('show');
     gameState.gameActive = false;
@@ -292,6 +341,7 @@ window.onload = () => {
         hideOrientationOverlay();
 
         hideShowMainMenu('off');
+        showMenuBtn(true);
         gameState.gameActive = true;
         gameState.score = 0;
         gameState.timeLeft = 90 * 1000;

@@ -18,7 +18,7 @@
         </div>
         <div id="mainMenu">
             <h1>Лабиринт стралюзий</h1>
-            <h5>Версия: 0.0.1.3</h5>
+            <h5>Версия: 0.0.1.4</h5>
             <button id="startBtn" class="menuBtn">Начать игру</button>
             <button id="settingBtn" class="menuBtn">Настройки</button>
             <button id="aboutOursBtn" class="menuBtn">О нас</button> 
@@ -37,6 +37,23 @@
             </div>       
         </div>
 
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&otimes;</span>
+                <h2>Настройки</h2>
+                <br>
+                <h4>Управление</h4>
+                <div class="setting-item">
+                    <span>Левша</span>
+                    <label class="switch">
+                        <input type="checkbox" id="rightHandToggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Правша</span>
+                </div>
+            </div>
+        </div>
+
         <div class="info">
           💎 Счёт: <span id="score">0</span>&nbsp;&nbsp; ⌛ Время: <span id="timer">00:00</span>
         </div>
@@ -47,6 +64,10 @@
         <div class="crosshair"></div>
 
         <canvas id="gameCanvas"></canvas>
+
+        <button id="menuBtn" class="menu-btn" style="display: none;" title="Меню">
+            ⍟
+        </button>
 
         <div id="touchControls" class="touchControlsCs">
             <div class="dpad">
@@ -66,7 +87,7 @@
                     <div class="dpad-empty"></div>                    
                 </div>
             </div>
-            <div class="action-btns">
+            <div id="act-btns" class="action-btns">
                 <button id="readBtn" class="touch-btn" data-key="e">📖E</button>
                 <button id="openBtn" class="touch-btn" data-key="o">🔓O</button>
             </div>

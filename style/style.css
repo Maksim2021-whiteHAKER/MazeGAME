@@ -120,6 +120,10 @@ canvas {
     z-index: 20;
 }
 
+.touchControlsCs.right-hand {
+    flex-direction: row-reverse;
+}
+
 .dpad {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 80px;
@@ -145,6 +149,10 @@ canvas {
     gap: 20px;
     pointer-events: auto;
 }
+
+.action-btns.right-hand {
+    transform: rotateY(180deg);
+}  
 
 /* ориентация */
 #orientation-overlay {
