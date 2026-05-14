@@ -48,7 +48,9 @@ export function tryMove(dx, dy) {
     let crntSign = signs.find(s => Math.floor(player.x) === s.x && Math.floor(player.y) === s.y);
     if (crntSign){
         window.nearSign = crntSign;
-        if (crntSign.type === 'usually'){
+        if (crntSign.type === 'usually' && crntSign?.addTime){
+            showMessage(crntSign.text, crntSign.addTime);
+        } else {
             showMessage(crntSign.text);
         }
     } else {

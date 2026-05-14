@@ -1,5 +1,5 @@
 // main.js
-import { initMap, solidMap, items, startX, startY, signs } from "./mapData.js";
+import { solidMap, items, startX, startY, signs } from "./mapData.js";
 import { player, handleMovement, keys } from "./player.js";
 import { draw3D } from "./render.js";
 import { updateUI, showMessage, gameState } from "./ui.js";
@@ -7,6 +7,8 @@ import { getTargetCell } from "./raycast.js";
 import { initInput } from "./input.js";
 import { startLoadingTextures } from "./loadTextures.js";
 import { setMaxDist } from "./gameConfig.js";
+import { currentLevelConfig, currentLevelIndex, isBeta, loadLevel, nextLevel, startGameFromFirstLevel } from "./levels.js";
+import { levelsData } from "./levelData.js";
 
 const menuBtn = document.getElementById('menuBtn');
 
@@ -76,16 +78,14 @@ function hideShowMainMenu(on){
 
 window.mainMenuGame = function(){
     gameState.score = 0;
-    gameState.timeLeft = 60 * 1000;
     gameState.gameActive = false;
     hideShowMainMenu('show');
     gameState.mapHide = true;
     isPaused = false;
-
-    initMap();
+    startGameFromFirstLevel();
     player.x = startX;
     player.y = startY;
-    player.dir = 0;
+    // player.dir = 0;
     keys.w = false; keys.s = false; keys.a = false; keys.d = false;
     updateUI();
     document.getElementById('menuOverlay').style.display = 'none';
@@ -94,16 +94,16 @@ window.mainMenuGame = function(){
 window.restartGame = function(){
     // Сбрасываем состояние
     gameState.score = 0;
-    gameState.timeLeft = 60 * 1000;
+    // gameState.timeLeft = 60 * 1000;
     gameState.gameActive = true;
     gameState.mapHide = true;
     isPaused = false;
     
     // Перезагружаем карту, предметы, таблички
-    initMap();
+    loadLevel(currentLevelIndex);
     player.x = startX;
     player.y = startY;
-    player.dir = 0;
+    // player.dir = 0;
     keys.w = false; keys.s = false; keys.a = false; keys.d = false;
     
     updateUI();
@@ -191,18 +191,25 @@ function onOpen() {
             solidMap[y][x] = 3; // Убираем стену (или оставляем как портал, если хочешь эффект)
             gameState.score += doorItem.value;
             gameState.gameActive = false; // временно для альфы
-            showMenu('Победа!', `Альфа версия 7 завершена. Ваш счёт: ${gameState.score}`, false);
+            // showMenu('Победа!', `Альфа версия 7 завершена. Ваш счёт: ${gameState.score}`, false);
             // showMessage("Выход найден! Переход на следующий уровень...");           
             // Здесь логика перехода на новый уровень
-            // loadNextLevel(); 
+            nextLevel(); 
             
             // Удаляем дверь из списка предметов
             items.splice(items.indexOf(doorItem), 1);
             updateUI();
+            return;
             
         } else if (doorItem.type === 'fake_door') { // Ловушка (темный треугольник)
-            gameState.score -= doorItem.value;
-            showMessage("Пока в разработке");
+            if (isBeta){
+                gameState.score -= doorItem.value;
+                showMessage('тут будет ловушка');
+
+            } else {
+                gameState.score -= doorItem.value;
+                showMessage("Уже будет или реалиализован в бэте или выше");
+            }
             
             // Опционально: телепортируем игрока назад или в бесконечный лабиринт
             // player.x = startX; player.y = startY; 
@@ -217,8 +224,28 @@ function onOpen() {
             showMessage("Секретный проход открыт!");
             items.splice(items.indexOf(doorItem), 1);
             updateUI();
+        } else if (doorItem.type === 'portal'){
+            switch (doorItem.target){
+                case 'alpha_lvl': loadLevel(0, true); break;
+                case 'alpha_end':{
+                    gameState.gameActive = false;   
+                    showMenu("Альфа-версия: завершена", `Счет: ${gameState.score}`, false);
+                    break;
+                } 
+                case 'beta_lvl': {
+                    // переход на бета-уровни (с врагами)
+                    if (currentLevelIndex + 1 < levelsData.length) {
+                        nextLevel();
+                    } else {
+                        showMessage("Бета-уровни в разработке");
+                    }
+                    break;
+                }
+                default: nextLevel();
+            }            
+            items.splice(items.indexOf(doorItem), 1);
+            updateUI();
         }
-        
     } 
     // ЛОГИКА ДЛЯ СЕКРЕТНЫХ СТЕН (без предмета-двери, но тип клетки 2)
     else if (wallType === 2) {
@@ -242,10 +269,12 @@ function applyHandednessLayout() {
 
     isRightHand === true ? container.classList.add('right-hand') : container.classList.remove('right-hand');
     isRightHand === true ? conBtn.classList.add('right-hand') : conBtn.classList.remove('right-hand');
-    isRightHand === true ? readBtn.style.transform = 'rotateY(180deg)' : readBtn.style.transform = 'rotateY(0)';
-    isRightHand === true ? openBtn.style.transform = 'rotateY(180deg)' : openBtn.style.transform = 'rotateY(0)';
-    isRightHand === true ? readBtn.textContent = 'E📖' : readBtn.textContent = '📖E';
-    isRightHand === true ? openBtn.textContent = 'O🔓' : openBtn.textContent = '🔓O';
+    if (screen.orientation.type === 'landscape-primary'){
+        isRightHand === true ? readBtn.style.transform = 'rotateY(180deg)' : readBtn.style.transform = 'rotateY(0)';
+        isRightHand === true ? openBtn.style.transform = 'rotateY(180deg)' : openBtn.style.transform = 'rotateY(0)';
+        isRightHand === true ? readBtn.textContent = 'E📖' : readBtn.textContent = '📖E';
+        isRightHand === true ? openBtn.textContent = 'O🔓' : openBtn.textContent = '🔓O';
+    }
 }
 
 function resizeCanvas(canvas) {
@@ -328,11 +357,12 @@ menuBtn.addEventListener('click', () => {
 
 window.onload = () => {
     applyHandednessLayout();
+    startLoadingTextures();
+
     let startBtn = document.getElementById('startBtn'); 
     hideShowMainMenu('show');
     gameState.gameActive = false;
-    startLoadingTextures();
-    initMap();
+    startGameFromFirstLevel();
     player.x = startX;
     player.y = startY;
 
@@ -344,13 +374,11 @@ window.onload = () => {
         showMenuBtn(true);
         gameState.gameActive = true;
         gameState.score = 0;
-        gameState.timeLeft = 90 * 1000;
+        // gameState.timeLeft = 90 * 1000;
         updateUI();
-        player.x = startX;
-        player.y = startY;
-        player.dir = 0;
+        // player.dir = 0;
         keys.w = false; keys.a = false; keys.s = false; keys.d = false;
-        initMap();
+        // initMap();
         lastTimestamp = 0;
         lastTimerUpdate = 0;
     })
@@ -392,11 +420,13 @@ window.onload = () => {
         }
         // Таймер обновляется только если игра активна и не на паузе
         if (now - lastTimerUpdate >= 1000 && gameState.gameActive && !isPaused) {
-            gameState.timeLeft -= 1000;
-            if (gameState.timeLeft <= 0) {
-                gameState.gameActive = false;
-                showMessage('Время вышло');
-                showMenu('Игра окончена', 'Время вышло!', false);
+            if (currentLevelConfig?.timeLimit !== null && currentLevelConfig?.timeLimit !== undefined) {
+                gameState.timeLeft -= 1000;
+                if (gameState.timeLeft <= 0) {
+                    gameState.gameActive = false;
+                    showMessage('Время вышло');
+                    showMenu('Игра окончена', 'Время вышло!', false);
+                }
             }
             updateUI();
             lastTimerUpdate = now;

@@ -7,18 +7,26 @@ export const gameState = {
    score: 0,
    timeLeft: 60 * 1000,
    gameActive: true,
-   mapHide: true
+   mapHide: true,
+   currentWallTexture: null,
+   floorGradientTop: 'rgb(110, 73, 30)',
+   floorGradientBottom: 'rgb(40, 20, 10)',
+   ceilingColor: 'rgb(30, 25, 30)'
 }
 
 export function updateUI(){
     document.getElementById('score').innerHTML = gameState.score;
-    let sec = Math.floor(gameState.timeLeft / 1000);
-    let min = Math.floor(sec / 60);
-    let secs = sec % 60;
-    document.getElementById('timer').innerText = `${min.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    if (gameState.timeLeft === null){
+        document.getElementById('timer').innerText = '--:--';
+    } else {
+        let sec = Math.floor(gameState.timeLeft / 1000);
+        let min = Math.floor(sec / 60);
+        let secs = sec % 60;
+        document.getElementById('timer').innerText = `${min.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
 }
 
-export function showMessage(text) {
+export function showMessage(text, time = 4000) {
     const msgDiv = document.getElementById('gameMessage');
     if (!msgDiv) return;
     msgDiv.innerText = text;
@@ -26,7 +34,7 @@ export function showMessage(text) {
     if (messageTimeout) clearTimeout(messageTimeout);
     messageTimeout = setTimeout(() => {
         msgDiv.style.opacity = '0';
-    }, 4000);
+    }, time);
 }
 
 export function collectionItemAt(x, y){

@@ -150,9 +150,11 @@ canvas {
     pointer-events: auto;
 }
 
-.action-btns.right-hand {
-    transform: rotateY(180deg);
-}  
+@media screen and (orientation: landscape){
+    .action-btns.right-hand {
+        transform: rotateY(180deg);
+    }  
+}
 
 /* ориентация */
 #orientation-overlay {

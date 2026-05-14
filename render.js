@@ -1,6 +1,6 @@
 // render.js
 import { halfFOV, maxDist, FOV } from "./gameConfig.js";
-import { doorImageData, secretDoorImageData, secretSignImageData, signImageData, textures, wallImageData } from "./loadTextures.js"
+import { textures } from "./loadTextures.js"
 import { items, signs, solidMap } from "./mapData.js";
 import { gameState } from "./ui.js";
 import { castRayWithSide } from "./raycast.js";
@@ -79,7 +79,7 @@ function drawSprites(ctx, w, h, player, items, solidMap){
 }
 
 function getWallTextureForCell(cellX, cellY){
-    const doorItem = items.find(it => it.x === cellX && it.y === cellY && ( it.type === 'fake_door' || it.type === 'true_door' || it.type === 'secret_door' ))
+    const doorItem = items.find(it => it.x === cellX && it.y === cellY && ( it.type === 'fake_door' || it.type === 'true_door' || it.type === 'secret_door' || it.type === 'portal'))
     const signItem = signs.find(s => s.x === cellX && s.y === cellY)
     // console.table(`texture: ${signItem}`); // undefined бесконечный
     
@@ -89,17 +89,22 @@ function getWallTextureForCell(cellX, cellY){
             case 'fake_door': return textures['door'];
             case 'true_door': return textures['g_door'];
         }
+        switch (doorItem.target){
+            case 'alpha_lvl': return textures['aDoor'];
+            case 'alpha_end': return textures['aDoor'];
+            case 'beta_lvl': return textures['bDoor'];
+        }
     }
         // return doorItem.type === 'secret_door' ? textures['s_door'] : textures['door'];
     if (signItem) return signItem.type === 'secret' ? textures['s_sign'] : textures['sign'];
     
-    return textures['wall'];
+    return gameState.currentWallTexture;
 }
 
 export function draw3D(canvas, ctx, solidMap, player) {
     const w = canvas.width;
     const h = canvas.height;
-    const wallTex = textures['wall'];
+    const wallTex = gameState.currentWallTexture || textures['wall_wood'];
 
     if (!wallTex?.complete) {
         // Рисуем заглушку пока грузится
@@ -159,37 +164,25 @@ export function draw3D(canvas, ctx, solidMap, player) {
         if (side === 1) {
             ctx.fillStyle = `rgba(0,0,0,0.2)`;
             ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
-        }
-
-        // // запасной цвет
-        // const brightness = Math.min(1, 1.2 / (distance * 0.3 + 0.5));
-        // ctx.fillStyle = `rgb(${67 * brightness}, ${80 * brightness}, ${60 * brightness})`;
-        // ctx.fillRect(col, wallTop, 1, wallBottom - wallTop);
-        
+        }      
     }
 
     for (let col = 0; col < w; col++) {
         const wallBottom = wallBottoms[col];
         if (wallBottom >= h) continue;
-        
-        const height = h - wallBottom;
-        const step = 4; // рисуем полосками для скорости
-        
-        for (let y = wallBottom; y < h; y += step) {
-            const t = (y - wallBottom) / height;
-            const r = Math.floor(110 - 90 * t);
-            const g = Math.floor(30 - 15 * t);
-            const b = Math.floor(20 - 10 * t);
-            
-            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-            ctx.fillRect(col, y, 1, step);
-        }
+
+        const grad = ctx.createLinearGradient(0, h, 0, wallBottom);
+        grad.addColorStop(0, gameState.floorGradientTop);
+        grad.addColorStop(1, gameState.floorGradientBottom);
+        ctx.fillStyle = grad
+        ctx.fillRect(col, wallBottom, 1, h - wallBottom);
     }
 
-    ctx.fillStyle = 'rgb(30, 25, 120)';
+    const ceilingColor = gameState.ceilingColor || 'rgb(30, 25, 120)';
     for (let col = 0; col < w; col++) {
         const wallTop = (h / 2) - (wallBottoms[col] - h / 2);
         if (wallTop > 0) {
+            ctx.fillStyle = ceilingColor;
             ctx.fillRect(col, 0, 1, wallTop);
         }
     }
@@ -218,7 +211,7 @@ export function drawMinimap(ctx, w, h, solidMap, items, player){
         }
     }
     for (let item of items){
-        if (item.type === 'secret_road' || item.type === 'secret_door' || item.type === 'void_secret' || item.type === 'true_door'){
+        if (item.type === 'secret_road' || item.type === 'secret_door' || item.type === 'void_secret' || item.type === 'true_door' || item.target === 'alpha_end'){
             ctx.fillStyle = '#444';
         } else if (item.type === 'fake_door'){
             ctx.fillStyle = 'green';

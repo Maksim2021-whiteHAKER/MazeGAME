@@ -1,17 +1,20 @@
 // loadTextures.js
 export let textures = {};
 export let texturesLoaded = 0;
-export const totalTextures = 10; // сколько всего текстур загружаем
-export let wallImageData = null;
+export const totalTextures = 13; // сколько всего текстур загружаем
+export let wallRuneImageData = null;
 export let doorImageData = null;
 export let gDoorImage = null;
 export let secretDoorImageData = null;
 export let openDoorImageData = null;
 export let signImageData = null;
-export let secretSignImageData = null
+export let secretSignImageData = null;
 export let coinImageData = null;
 export let diamondImageData = null;
 export let timeImageData = null;
+export let wallWoodImageData = null;
+export let aDoorImageData = null;
+export let bDoorImageData = null;
 
 export function prepareTexture(img) {
     const offCanvas = document.createElement('canvas');
@@ -27,7 +30,7 @@ export function loadTextures(name, url) {
     img.onload = () => {
         texturesLoaded++;
         switch (name){
-            case 'wall': wallImageData = prepareTexture(img); break;
+            case 'wall_rune': wallRuneImageData = prepareTexture(img); break; // руны
             case 'door': doorImageData = prepareTexture(img); break; // fake
             case 'g_door': gDoorImage = prepareTexture(img); break; // real
             case 'o_door': openDoorImageData = prepareTexture(img); break; // open doors
@@ -37,6 +40,9 @@ export function loadTextures(name, url) {
             case 'coin': coinImageData = prepareTexture(img); break;
             case 'diamond': diamondImageData = prepareTexture(img); break;
             case 'time': timeImageData = prepareTexture(img); break;
+            case 'wall_wood': wallWoodImageData = prepareTexture(img); break; // дерево
+            case 'aDoor': aDoorImageData = prepareTexture(img); break;
+            case 'bDoor': bDoorImageData = prepareTexture(img); break;
         } 
         if (texturesLoaded === totalTextures) {
             console.log('✅ Все текстуры загружены');
@@ -48,7 +54,7 @@ export function loadTextures(name, url) {
 
 // Удобная функция для старта загрузки всех текстур
 export function startLoadingTextures() {
-    loadTextures('wall', 'textures/wall.jpg');
+    loadTextures('wall_rune', 'textures/wall_rune.jpg');
     loadTextures('door', 'textures/door.png'); // fake
     loadTextures('g_door', 'textures/real_door.png')
     loadTextures('s_door', 'textures/s_door.jpg');
@@ -58,4 +64,7 @@ export function startLoadingTextures() {
     loadTextures('coin', 'textures/coin512.png');
     loadTextures('diamond', 'textures/diamond512.png');
     loadTextures('time', 'textures/plus_time.png');
+    loadTextures('wall_wood', 'textures/wall_wood.webp');
+    loadTextures('aDoor', 'textures/door_alpha.jpg');
+    loadTextures('bDoor', 'textures/door_beta.jpg');
 }
