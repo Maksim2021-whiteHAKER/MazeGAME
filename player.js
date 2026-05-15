@@ -1,7 +1,9 @@
 // player.js
 import { WALL_OFFSET, MOVE_SPD, ROT_SPD } from './gameConfig.js'
-import { solidMap, signs, startX, startY } from './mapData.js'
-import { collectionItemAt, gameState, showMessage } from './ui.js'
+import { loadLevel, nextLevel } from './levels.js';
+import { showMenu } from './main.js';
+import { solidMap, signs, startX, startY, items } from './mapData.js'
+import { collectionItemAt, gameState, showMessage, updateUI } from './ui.js'
 
 export let player = {x: startX, y: startY, dir: 0 };
 export let keys = {w: false, a: false, s: false, d: false};
@@ -14,7 +16,7 @@ export function tryMove(dx, dy) {
     let canMoveX = false;
 
     if (gridY >= 0 && gridY < solidMap.length && gridXtarget >= 0 && gridXtarget < solidMap[0].length){
-        let isWall = solidMap[gridY][gridXtarget] !== 0;
+        let isWall = solidMap[gridY][gridXtarget] !== 0 && solidMap[gridY][gridXtarget] !== 3;
         if (!isWall){
             canMoveX = true;
         } else {
@@ -32,7 +34,7 @@ export function tryMove(dx, dy) {
     let gridYtarget = Math.floor(newY);
     let canMoveY = false;
     if (gridYtarget >= 0 && gridYtarget < solidMap.length && gridX >= 0 && gridX < solidMap[0].length){
-        let isWall = solidMap[gridYtarget][gridX] !== 0;
+        let isWall = solidMap[gridYtarget][gridX] !== 0 && solidMap[gridYtarget][gridX] !== 3;
         if (!isWall){
             canMoveY = true;
         } else {
@@ -44,7 +46,7 @@ export function tryMove(dx, dy) {
         }
         if (canMoveY) player.y = newY;
     }
-    let collected = collectionItemAt(Math.floor(player.x), Math.floor(player.y));
+    collectionItemAt(Math.floor(player.x), Math.floor(player.y));
     let crntSign = signs.find(s => Math.floor(player.x) === s.x && Math.floor(player.y) === s.y);
     if (crntSign){
         window.nearSign = crntSign;
@@ -56,6 +58,7 @@ export function tryMove(dx, dy) {
     } else {
         window.nearSign = null;
     }
+    activateDoor(Math.floor(player.x), Math.floor(player.y));
 }
 
 export function handleMovement(delta) {
@@ -76,4 +79,27 @@ export function handleMovement(delta) {
     if (dx !== 0 || dy !== 0){
         tryMove(dx, dy);
     }
+}
+
+function activateDoor(x, y){
+    const doorItem = items.find(it => it.x === x && it.y === y && it.opened === true);
+    if (!doorItem) return
+    items.splice(items.indexOf(doorItem), 1);
+    if (doorItem.type === 'true_door') {
+        gameState.score += doorItem.value;
+        nextLevel();
+    } else if (doorItem.type === 'fake_door') {
+        gameState.score -= doorItem.value;
+        // тп в бесконечный лаб
+    } else if (doorItem.type === 'secret_door'){
+        gameState.score += doorItem.value;
+        // пока не придумал
+    } else if (doorItem.type === 'portal'){
+        switch (doorItem.target){
+            case 'alpha_lvl': loadLevel(0, true); break
+            case 'alpha_end': gameState.gameActive = false; showMenu("Альфа-версия: завершена", `Счет: ${gameState.score}`, false); break;
+            case 'beta_lvl': nextLevel(); break;              
+        }
+    }
+    updateUI();
 }

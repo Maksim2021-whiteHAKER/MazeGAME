@@ -8,7 +8,6 @@ import { initInput } from "./input.js";
 import { startLoadingTextures } from "./loadTextures.js";
 import { setMaxDist } from "./gameConfig.js";
 import { currentLevelConfig, currentLevelIndex, isBeta, loadLevel, nextLevel, startGameFromFirstLevel } from "./levels.js";
-import { levelsData } from "./levelData.js";
 
 const menuBtn = document.getElementById('menuBtn');
 
@@ -116,7 +115,7 @@ window.resumeGame = function() {
     document.getElementById('menuOverlay').style.display = 'none';
 };
 
-function showMenu(title, message, showResume = true) {
+export function showMenu(title, message, showResume = true) {
     const overlay = document.getElementById('menuOverlay');
     document.getElementById('menuTitle').innerText = title;
     document.getElementById('menuMessage').innerText = message;
@@ -189,33 +188,23 @@ function onOpen() {
     if (doorItem) {
         if (doorItem.type === 'true_door') { // Реальная дверь (желтый треугольник)
             solidMap[y][x] = 3; // Убираем стену (или оставляем как портал, если хочешь эффект)
-            gameState.score += doorItem.value;
-            gameState.gameActive = false; // временно для альфы
-            // showMenu('Победа!', `Альфа версия 7 завершена. Ваш счёт: ${gameState.score}`, false);
-            // showMessage("Выход найден! Переход на следующий уровень...");           
-            // Здесь логика перехода на новый уровень
-            nextLevel(); 
-            
-            // Удаляем дверь из списка предметов
-            items.splice(items.indexOf(doorItem), 1);
+            doorItem.opened = true;
             updateUI();
             return;
             
         } else if (doorItem.type === 'fake_door') { // Ловушка (темный треугольник)
             if (isBeta){
-                gameState.score -= doorItem.value;
-                showMessage('тут будет ловушка');
+                solidMap[y][x] = 3;
+                doorItem.opened = true;
+                // gameState.score -= doorItem.value;
+                // showMessage('тут будет ловушка');
 
             } else {
-                gameState.score -= doorItem.value;
+                // gameState.score -= doorItem.value;
                 showMessage("Уже будет или реалиализован в бэте или выше");
             }
             
             // Опционально: телепортируем игрока назад или в бесконечный лабиринт
-            // player.x = startX; player.y = startY; 
-            
-            // Удаляем дверь, чтобы не спамить
-            items.splice(items.indexOf(doorItem), 1);
             updateUI();
             
         } else if (doorItem.type === 'secret_road' || doorItem.type === 'void_secret') { // Секретные проходы
@@ -226,24 +215,27 @@ function onOpen() {
             updateUI();
         } else if (doorItem.type === 'portal'){
             switch (doorItem.target){
-                case 'alpha_lvl': loadLevel(0, true); break;
+                case 'alpha_lvl':{
+                    solidMap[y][x] = 3; 
+                    doorItem.opened = true; //loadLevel(0, true); break;
+                } 
                 case 'alpha_end':{
-                    gameState.gameActive = false;   
-                    showMenu("Альфа-версия: завершена", `Счет: ${gameState.score}`, false);
+                    solidMap[y][x] = 3;
+                    doorItem.opened = true;
+                    // console.log('main.js: alpha_end -',doorItem.opened, "SM:", solidMap)
+                    // gameState.gameActive = false;   
+                    // showMenu("Альфа-версия: завершена", `Счет: ${gameState.score}`, false);
                     break;
                 } 
                 case 'beta_lvl': {
                     // переход на бета-уровни (с врагами)
-                    if (currentLevelIndex + 1 < levelsData.length) {
-                        nextLevel();
-                    } else {
-                        showMessage("Бета-уровни в разработке");
-                    }
+                    solidMap[y][x] = 3; 
+                    doorItem.opened = true;
                     break;
                 }
-                default: nextLevel();
+                // default: nextLevel();
             }            
-            items.splice(items.indexOf(doorItem), 1);
+            // items.splice(items.indexOf(doorItem), 1);
             updateUI();
         }
     } 

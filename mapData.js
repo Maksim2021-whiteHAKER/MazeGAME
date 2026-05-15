@@ -52,11 +52,11 @@ export function initMap(levelMap){
             } else if (sh === 'r'){
                 items.push({x, y, type: 'void_secret', value: 1});
             } else if (sh === 'D'){
-                items.push({x, y, type: 'fake_door', value: 150, trap: true});
+                items.push({x, y, type: 'fake_door', value: 150, trap: true, opened: false});
             } else if (sh === 'S'){
-                items.push({x, y, type: 'secret_door', value: 15000, win: true});
+                items.push({x, y, type: 'secret_door', value: 15000, win: true, opened: false});
             } else if (sh === 'G'){ // g/п т.е п - правильная дверь
-                items.push({x, y, type: 'true_door', value: 500, win: true});
+                items.push({x, y, type: 'true_door', value: 500, win: true, opened: false});
             } else if (sh === 'N'){
                 signs.push({x, y, type: 'secret', text: "Мини подсказка: нажми на 'O' перед странной стеной", });
             } else if (sh === 'n'){
@@ -64,11 +64,11 @@ export function initMap(levelMap){
             } else if (sh === '0'){
                 signs.push({x, y, type: 'usually', text: "Добро пожаловать в параллельный мир.\n Твоя задача: пройти 50 уровней лабиринта.\n У тебя сейчас две двери:\n'Альфа'- типа обучение, и\n'Бета' - мир где и начнётся твоё испытание\n*жуткий смех*", addTime: 9000});
             } else if (sh === 'a'){
-                items.push({x, y, type: 'portal', target: 'alpha_lvl', value: 14 });
+                items.push({x, y, type: 'portal', target: 'alpha_lvl', value: 14, opened: false });
             } else if (sh === 'A'){
-                items.push({x, y, type: 'portal', target: 'alpha_end', value: 99});
+                items.push({x, y, type: 'portal', target: 'alpha_end', value: 99, opened: false});
             } else if (sh === 'b'){
-                items.push({x, y, type: 'portal', target: 'beta_lvl', value: 15 }); // нет смысла городить новые двери т.е есть f,s,t двери
+                items.push({x, y, type: 'portal', target: 'beta_lvl', value: 15, opened: false }); // нет смысла городить новые двери т.е есть f,s,t двери
             }
         }
     }

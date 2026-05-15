@@ -39,7 +39,8 @@ export function showMessage(text, time = 4000) {
 
 export function collectionItemAt(x, y){
     const idx = items.findIndex(item => item.x === x && item.y === y)
-    if (idx === -1) return false;
+    const doorItem = items.find(it => it.x === x && it.y === y && it.type === 'portal');
+    if (idx === -1 || doorItem) return false;
     const item = items[idx];
     items.splice(idx, 1); 
     

@@ -82,8 +82,16 @@ function getWallTextureForCell(cellX, cellY){
     const doorItem = items.find(it => it.x === cellX && it.y === cellY && ( it.type === 'fake_door' || it.type === 'true_door' || it.type === 'secret_door' || it.type === 'portal'))
     const signItem = signs.find(s => s.x === cellX && s.y === cellY)
     // console.table(`texture: ${signItem}`); // undefined бесконечный
-    
+   
     if (doorItem) {
+            if (doorItem && doorItem.opened) {
+                switch (doorItem.target){
+                    case 'alpha_lvl': return textures['o_door_wood'];
+                    case 'alpha_end': return textures['o_door'];
+                    case 'beta_lvl': return textures['o_door_wood'];
+                    default: return textures['o_door'];
+                }
+        }
         switch (doorItem.type){
             case 'secret_door': return textures['s_door'];
             case 'fake_door': return textures['door'];
@@ -91,11 +99,10 @@ function getWallTextureForCell(cellX, cellY){
         }
         switch (doorItem.target){
             case 'alpha_lvl': return textures['aDoor'];
-            case 'alpha_end': return textures['aDoor'];
+            case 'alpha_end': return textures['aDoor_rune'];
             case 'beta_lvl': return textures['bDoor'];
         }
     }
-        // return doorItem.type === 'secret_door' ? textures['s_door'] : textures['door'];
     if (signItem) return signItem.type === 'secret' ? textures['s_sign'] : textures['sign'];
     
     return gameState.currentWallTexture;
