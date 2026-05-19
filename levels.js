@@ -4,6 +4,7 @@ import { levelsData, levelDataA } from "./levelData.js";
 import { player } from "./player.js";
 import { gameState, showMessage } from "./ui.js";
 import { textures } from "./loadTextures.js";
+import { Enemy } from "./enemy.js";
 
 export let currentLevelIndex = 0;
 export let currentLevelConfig = null;
@@ -18,6 +19,10 @@ export function loadLevel(index, alpha = false) {
     currentLevelConfig = level;
     // Загружаем карту, передавая level.map
     initMap(level.map);
+    if (level.enemies?.length){
+        gameState.enemies = level.enemies.map(e => new Enemy(e.x, e.y, e.type));
+    } else gameState.enemies = [];
+    
     // Устанавливаем стартовые координаты игрока
     player.x = startX;
     player.y = startY;

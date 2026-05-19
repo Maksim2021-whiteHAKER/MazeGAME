@@ -135,13 +135,13 @@ function showModal(modal){
     console.log(modal)
     if (modal){
         // Скрываем все модалки перед показом новой
-        document.querySelectorAll(['.modal', '.modal_set']).forEach(m => m.style.display = 'none');
+        document.querySelectorAll('.modal, .modal_set').forEach(m => m.style.display = 'none');
         modal.style.display = 'block';       
     }
 }
 
 function hideModals() {
-    document.querySelectorAll(['.modal','.modal_set','.wheel-container']).forEach(m => m.style.display = 'none');
+    document.querySelectorAll('.modal, .modal_set, .wheel-container').forEach(m => m.style.display = 'none');
 }
 
 // Закрытие по клику вне окна
@@ -151,7 +151,7 @@ window.addEventListener('click', (event) => {
     }
 });
 
-document.querySelectorAll(['.close-btn', '.close-btnWF']).forEach(btn => {
+document.querySelectorAll('.close-btn, .close-btnWF').forEach(btn => {
     if (btn.className === 'close-btn'){
         btn.addEventListener('click', hideModals);
     }
@@ -186,13 +186,13 @@ function onOpen() {
 
     // ЛОГИКА ДЛЯ ДВЕРЕЙ (тип клетки может быть 1 или 2, но главное - наличие предмета)
     if (doorItem) {
-        if (doorItem.type === 'true_door') { // Реальная дверь (желтый треугольник)
+        if (doorItem.variant === 'true_door') { // Реальная дверь (желтый треугольник)
             solidMap[y][x] = 3; // Убираем стену (или оставляем как портал, если хочешь эффект)
             doorItem.opened = true;
             updateUI();
             return;
             
-        } else if (doorItem.type === 'fake_door') { // Ловушка (темный треугольник)
+        } else if (doorItem.variant === 'fake_door') { // Ловушка (темный треугольник)
             if (isBeta){
                 solidMap[y][x] = 3;
                 doorItem.opened = true;
@@ -422,6 +422,11 @@ window.onload = () => {
             }
             updateUI();
             lastTimerUpdate = now;
+        }
+        if (gameState.gameActive && !isPaused && gameState.enemies?.length){
+            gameState.enemies.forEach(enemy => {
+                enemy.update(player, delta, solidMap, now);
+            })
         }
         draw3D(canvas, ctx, solidMap, player);
         requestAnimationFrame(gameLoop);

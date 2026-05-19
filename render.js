@@ -79,7 +79,7 @@ function drawSprites(ctx, w, h, player, items, solidMap){
 }
 
 function getWallTextureForCell(cellX, cellY){
-    const doorItem = items.find(it => it.x === cellX && it.y === cellY && ( it.type === 'fake_door' || it.type === 'true_door' || it.type === 'secret_door' || it.type === 'portal'))
+    const doorItem = items.find(it => it.x === cellX && it.y === cellY && (it.variant === 'fake_door' || it.variant === 'true_door' || it.variant === 'secret_door' || it.type === 'portal'))
     const signItem = signs.find(s => s.x === cellX && s.y === cellY)
     // console.table(`texture: ${signItem}`); // undefined бесконечный
    
@@ -92,7 +92,7 @@ function getWallTextureForCell(cellX, cellY){
                     default: return textures['o_door'];
                 }
         }
-        switch (doorItem.type){
+        switch (doorItem.variant){
             case 'secret_door': return textures['s_door'];
             case 'fake_door': return textures['door'];
             case 'true_door': return textures['g_door'];
@@ -195,6 +195,12 @@ export function draw3D(canvas, ctx, solidMap, player) {
     }
 
     drawSprites(ctx, w, h, player, items, solidMap);
+    // сортировка врагов от дальних к ближний
+    [...gameState.enemies].sort((a, b) => {
+        const da = Math.hypot(a.x - player.x, a.y - player.y);
+        const db = Math.hypot(b.x - player.x, b.y - player.y);
+        return db - da;
+    }).forEach(enemy => enemy.draw(ctx, w, h, player));
     
     if (gameState.mapHide){
         drawMinimap(ctx, w, h, solidMap, items, player);
@@ -218,9 +224,9 @@ export function drawMinimap(ctx, w, h, solidMap, items, player){
         }
     }
     for (let item of items){
-        if (item.type === 'secret_road' || item.type === 'secret_door' || item.type === 'void_secret' || item.type === 'true_door' || item.target === 'alpha_end'){
+        if (item.type === 'secret_road' || item.variant === 'secret_door' || item.type === 'void_secret' || item.variant === 'true_door' || item.target === 'alpha_end'){
             ctx.fillStyle = '#444';
-        } else if (item.type === 'fake_door'){
+        } else if (item.variant === 'fake_door'){
             ctx.fillStyle = 'green';
         } else {
             ctx.fillStyle = `gold`;

@@ -93,7 +93,7 @@ export const levelsData = [
         }
     },
     { // 2 уровень: лабиринт ур 1
-        name: "Лабиринт ур 1", map: labyrinthLv1, timeLimit: 120 * 1000, enemies: [{ x: 16, y: 16, type: 'axeos_meo' }],
+        name: "Лабиринт ур 1", map: labyrinthLv1, timeLimit: 120 * 1000, enemies: [{ x: 2, y: 2, type: 'skeleton' }],
         theme: {
             wallTexture: 'wall_rune',
             floorGradientTop: 'rgb(60, 40, 70)',

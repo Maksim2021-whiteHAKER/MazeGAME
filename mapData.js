@@ -52,11 +52,11 @@ export function initMap(levelMap){
             } else if (sh === 'r'){
                 items.push({x, y, type: 'void_secret', value: 1});
             } else if (sh === 'D'){
-                items.push({x, y, type: 'fake_door', value: 150, trap: true, opened: false});
+                items.push({x, y, type: 'door', variant: 'fake_door', value: 150, trap: true, opened: false});
             } else if (sh === 'S'){
-                items.push({x, y, type: 'secret_door', value: 15000, win: true, opened: false});
+                items.push({x, y, type: 'door', variant: 'secret_door', value: 15000, win: true, opened: false});
             } else if (sh === 'G'){ // g/п т.е п - правильная дверь
-                items.push({x, y, type: 'true_door', value: 500, win: true, opened: false});
+                items.push({x, y, type: 'door', variant: 'true_door', value: 500, win: true, opened: false});
             } else if (sh === 'N'){
                 signs.push({x, y, type: 'secret', text: "Мини подсказка: нажми на 'O' перед странной стеной", });
             } else if (sh === 'n'){

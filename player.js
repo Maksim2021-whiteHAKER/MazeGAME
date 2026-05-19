@@ -85,13 +85,13 @@ function activateDoor(x, y){
     const doorItem = items.find(it => it.x === x && it.y === y && it.opened === true);
     if (!doorItem) return
     items.splice(items.indexOf(doorItem), 1);
-    if (doorItem.type === 'true_door') {
+    if (doorItem.variant === 'true_door') {
         gameState.score += doorItem.value;
         nextLevel();
-    } else if (doorItem.type === 'fake_door') {
+    } else if (doorItem.variant === 'fake_door') {
         gameState.score -= doorItem.value;
         // тп в бесконечный лаб
-    } else if (doorItem.type === 'secret_door'){
+    } else if (doorItem.variant === 'secret_door'){
         gameState.score += doorItem.value;
         // пока не придумал
     } else if (doorItem.type === 'portal'){

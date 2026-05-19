@@ -8,6 +8,7 @@ export const gameState = {
    timeLeft: 60 * 1000,
    gameActive: true,
    mapHide: true,
+   enemies: [],
    currentWallTexture: null,
    floorGradientTop: 'rgb(110, 73, 30)',
    floorGradientBottom: 'rgb(40, 20, 10)',
@@ -39,8 +40,8 @@ export function showMessage(text, time = 4000) {
 
 export function collectionItemAt(x, y){
     const idx = items.findIndex(item => item.x === x && item.y === y)
-    const doorItem = items.find(it => it.x === x && it.y === y && it.type === 'portal');
-    if (idx === -1 || doorItem) return false;
+    const interactObject = items.find(it => it.x === x && it.y === y && (it.type === 'portal' || it.type === 'door'));
+    if (idx === -1 || interactObject) return false;
     const item = items[idx];
     items.splice(idx, 1); 
     
@@ -53,12 +54,8 @@ export function collectionItemAt(x, y){
             solidMap[item.y][item.x] = 0;
             break;
         }
-        case 'fake_door': {
-            gameState.score -= item.value;
-            if (gameState.score < 0) gameState.score = 0;
-        }
     }
-
+    
     updateUI();
     return true;
 }
