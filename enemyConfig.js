@@ -1,7 +1,7 @@
 // enemyConfig.js
 
 export const ENEMY_CONFIG = {
-    axseos_meo: { speed: 1.5, canPassDoors: false, canPassWalls: false, behavior: 'guard', lookThreshold: 5, teleportCooldown: 3}, // scp173+плачущий ангел
+    axseos_meo: { speed: 1.5, canPassDoors: false, canPassWalls: false, behavior: 'guard', lookThreshold: 5, teleportCooldown: 3}, // scp173+плачущий ангел(ИЗ ДОКТОРА КТО)
     passer: { speed: 1.2, canPassDoors: true, canPassWalls: false, behavior: 'passer'}, // проходчик
     stalker: { speed: 1.8, canPassDoors: false, canPassWalls: false, behavior: 'stalker', radar_range: 5}, // преследователь
     spirit_leya: { speed: 0.6, canPassDoors: true, canPassWalls: true, behavior: 'spirit'}, // дух Лейя

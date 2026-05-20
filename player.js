@@ -5,7 +5,14 @@ import { showMenu } from './main.js';
 import { solidMap, signs, startX, startY, items } from './mapData.js'
 import { collectionItemAt, gameState, showMessage, updateUI } from './ui.js'
 
-export let player = {x: startX, y: startY, dir: 0 };
+export let player = {
+    x: startX, y: startY, dir: 0,
+    speedMult: 1,
+    isStunned: false,
+    lastTurnDelta: 0,
+    passedDoor: false 
+};
+
 export let keys = {w: false, a: false, s: false, d: false};
 
 export function tryMove(dx, dy) {
@@ -66,15 +73,21 @@ export function handleMovement(delta) {
     
     let dx = 0; let dy = 0;
     if (keys.w) {
-        dx += Math.cos(player.dir) * MOVE_SPD * delta;
-        dy += Math.sin(player.dir) * MOVE_SPD * delta;
+        dx += Math.cos(player.dir) * MOVE_SPD * player.speedMult * delta;
+        dy += Math.sin(player.dir) * MOVE_SPD * player.speedMult * delta;
     }
     if (keys.s) {
-        dx += -Math.cos(player.dir) * MOVE_SPD * delta;
-        dy += -Math.sin(player.dir) * MOVE_SPD * delta;
+        dx += -Math.cos(player.dir) * MOVE_SPD * player.speedMult * delta;
+        dy += -Math.sin(player.dir) * MOVE_SPD * player.speedMult * delta;
     }
-    if (keys.a) player.dir -= ROT_SPD * delta;
-    if (keys.d) player.dir += ROT_SPD * delta;
+    if (keys.a){
+        player.dir -= ROT_SPD * delta * (player.isStunned ? 0 : 1);
+        player.lastTurnDelta = -ROT_SPD * delta;
+    }
+    if (keys.d){
+        player.dir += ROT_SPD * delta * (player.isStunned ? 0 : 1);
+        player.lastTurnDelta = ROT_SPD * delta;
+    }
 
     if (dx !== 0 || dy !== 0){
         tryMove(dx, dy);
@@ -84,6 +97,9 @@ export function handleMovement(delta) {
 function activateDoor(x, y){
     const doorItem = items.find(it => it.x === x && it.y === y && it.opened === true);
     if (!doorItem) return
+    player.passedDoor = true;
+    setTimeout(() => { player.passedDoor = false}, 1500);
+
     items.splice(items.indexOf(doorItem), 1);
     if (doorItem.variant === 'true_door') {
         gameState.score += doorItem.value;
