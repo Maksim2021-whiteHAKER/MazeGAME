@@ -1,5 +1,4 @@
 // mapData.js
-import { levelsData } from "./levelData.js";
 
 export let solidMap = [];
 export let items = [];

@@ -1,9 +1,9 @@
 // player.js
 import { WALL_OFFSET, MOVE_SPD, ROT_SPD } from './gameConfig.js'
+import { joystick } from './input.js';
 import { loadLevel, nextLevel } from './levels.js';
-import { showMenu } from './main.js';
 import { solidMap, signs, startX, startY, items } from './mapData.js'
-import { collectionItemAt, gameState, showMessage, updateUI } from './ui.js'
+import { collectionItemAt, gameState, showMessage, showMenu, updateUI } from './ui.js'
 
 export let player = {
     x: startX, y: startY, dir: 0,
@@ -72,21 +72,33 @@ export function handleMovement(delta) {
     if (gameState.gameActive === false) return;
     
     let dx = 0; let dy = 0;
-    if (keys.w) {
-        dx += Math.cos(player.dir) * MOVE_SPD * player.speedMult * delta;
-        dy += Math.sin(player.dir) * MOVE_SPD * player.speedMult * delta;
-    }
-    if (keys.s) {
-        dx += -Math.cos(player.dir) * MOVE_SPD * player.speedMult * delta;
-        dy += -Math.sin(player.dir) * MOVE_SPD * player.speedMult * delta;
-    }
-    if (keys.a){
-        player.dir -= ROT_SPD * delta * (player.isStunned ? 0 : 1);
-        player.lastTurnDelta = -ROT_SPD * delta;
-    }
-    if (keys.d){
-        player.dir += ROT_SPD * delta * (player.isStunned ? 0 : 1);
-        player.lastTurnDelta = ROT_SPD * delta;
+    if (gameState.controlMode === 'dpad'){
+        if (keys.w) {
+            dx += Math.cos(player.dir) * MOVE_SPD * player.speedMult * delta;
+            dy += Math.sin(player.dir) * MOVE_SPD * player.speedMult * delta;
+        }
+        if (keys.s) {
+            dx += -Math.cos(player.dir) * MOVE_SPD * player.speedMult * delta;
+            dy += -Math.sin(player.dir) * MOVE_SPD * player.speedMult * delta;
+        }
+        if (keys.a){
+            player.dir -= ROT_SPD * delta * (player.isStunned ? 0 : 1);
+            player.lastTurnDelta = -ROT_SPD * delta;
+        }
+        if (keys.d){
+            player.dir += ROT_SPD * delta * (player.isStunned ? 0 : 1);
+            player.lastTurnDelta = ROT_SPD * delta;
+        }
+    } else if (gameState.controlMode === 'joystick' && joystick.active) {
+        // Джойстик: Y = движение вперёд/назад, X = поворот (или стрейф)
+        const forward = -Math.sin(joystick.angle); // инверсия Y для экрана
+        const turn = Math.cos(joystick.angle);
+
+        // Движение вдоль взгляда
+        dx += Math.cos(player.dir) * MOVE_SPD * forward * joystick.force * delta * player.speedMult;
+        dy += Math.sin(player.dir) * MOVE_SPD * forward * joystick.force * delta * player.speedMult;
+        // Поворот камеры
+        player.dir += turn * ROT_SPD * joystick.force * delta * 0.8;
     }
 
     if (dx !== 0 || dy !== 0){

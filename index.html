@@ -7,18 +7,34 @@
         <title>Лабиринт стралюзий</title>
         <link rel="stylesheet" href="style/style.css">
         <link rel="stylesheet" href="style/menu.css">
+        <script src="https://sdk.games.s3.yandex.net/sdk.js"></script>
     </head>
     <body>
+        <script>
+            window.initYandexSDK = function () {
+                if (typeof YaGames === 'undefined') return;
+                YaGames.init().then(ysdk => {
+                    window.ysdk = ysdk;
+                    console.log('✅ Yandex SDK:', ysdk.environment);
+                    window.dispatchEvent(new CustomEvent('ysdk-ready'));
+                }).catch(() => {
+                    console.warn('⚠️ SDK инициализирован не будет (локальный запуск)');
+                });
+            };
+            // Запускаем сразу после загрузки скрипта
+            window.initYandexSDK();
+        </script>
         <div id="menuOverlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; flex-direction: column; justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(4px);">
             <h1 id="menuTitle">Game Over</h1>
-            <p id="menuMessage">Сообщение</p>
+            <p id="menuMessage" class="menuMessage">Сообщение</p>
             <button id="restartBtn" class="overlay_btn-menu">Начать заново</button>
             <button id="resumeBtn" class="overlay_btn-menu">Продолжить</button>
             <button id="backToMainMenu" class="overlay_btn-menu">Главное меню</button>
         </div>
         <div id="mainMenu">
             <h1>Лабиринт стралюзий</h1>
-            <h5>Версия: 0.0.1.8</h5>
+            <h4 id="betaBadge" class="betaBadge" style="display: none;">Бета</h4>
+            <h5>Версия: 0.0.1.9</h5>
             <button id="startBtn" class="menuBtn">Начать игру</button>
             <button id="settingBtn" class="menuBtn">Настройки</button>
             <button id="aboutOursBtn" class="menuBtn">О нас</button> 
@@ -51,6 +67,12 @@
                     </label>
                     <span>Правша</span>
                 </div>
+                <div class="setting-item">
+                    <span id="jTText1">(↓↑←→)D-pad</span>
+                    <span id="jTPC" style="display: none;">ПК(↑↓←→)</span>
+                    <label class="switch"><input type="checkbox" id="joystickToggle"><span class="slider round" id="jT"></span></label>
+                    <span id="jTText2">(🕹)Joystick</span>
+                </div>
             </div>
         </div>
 
@@ -65,9 +87,7 @@
 
         <canvas id="gameCanvas"></canvas>
 
-        <button id="menuBtn" class="menu-btn" style="display: none;" title="Меню">
-            ⍟
-        </button>
+        <button id="menuBtn" class="menu-btn" style="display: none;" title="Меню">⍟</button>
 
         <div id="touchControls" class="touchControlsCs">
             <div class="dpad">
@@ -87,10 +107,17 @@
                     <div class="dpad-empty"></div>                    
                 </div>
             </div>
-            <div id="act-btns" class="action-btns">
-                <button id="readBtn" class="touch-btn" data-key="e">📖E</button>
-                <button id="openBtn" class="touch-btn" data-key="o">🔓O</button>
+        </div>
+        <div class="touchControlsCs">
+            <div id="joystickZone" class="joystick-zone" style="display: none;">
+                <div id="joystickBase" class="joystick-base">
+                    <div id="joystickKnob" class="joystick-knob"></div>
+                </div>
             </div>
+        </div>
+        <div id="act-btns" class="action-btns">
+            <button id="readBtn" class="touch-btn" data-key="e">📖E</button>
+            <button id="openBtn" class="touch-btn" data-key="o">🔓O</button>
         </div>
         <script type="module" src="main.js"></script>
     </body>

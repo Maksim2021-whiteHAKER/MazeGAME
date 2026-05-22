@@ -2,12 +2,21 @@
 import { solidMap, items, startX, startY, signs } from "./mapData.js";
 import { player, handleMovement, keys } from "./player.js";
 import { draw3D } from "./render.js";
-import { updateUI, showMessage, gameState } from "./ui.js";
+import { updateUI, showMessage, showMenu, gameState } from "./ui.js";
 import { getTargetCell } from "./raycast.js";
-import { initInput } from "./input.js";
+import { initInput, initJoystick } from "./input.js";
 import { startLoadingTextures } from "./loadTextures.js";
 import { setMaxDist } from "./gameConfig.js";
-import { currentLevelConfig, currentLevelIndex, isBeta, loadLevel, nextLevel, startGameFromFirstLevel } from "./levels.js";
+import { currentLevelConfig, currentLevelIndex, isBeta, loadLevel, startGameFromFirstLevel } from "./levels.js";
+import { getENV } from "./env.js";
+
+const betaBadge = document.getElementById('betaBadge')
+betaBadge.style.display = 'flex';
+
+window.addEventListener('ysdk-ready', () => {
+    const newEnv = getENV();
+    document.getElementById('betaBadge').style.display = newEnv.IS_BETA ? 'flex' : 'none';
+})
 
 const menuBtn = document.getElementById('menuBtn');
 
@@ -64,7 +73,6 @@ function hideOrientationOverlay() {
 }  
 
 let gameLoopId = null;
-let isPaused = false;
 let menu = document.getElementById('mainMenu');
 
 function hideShowMainMenu(on){
@@ -80,11 +88,10 @@ window.mainMenuGame = function(){
     gameState.gameActive = false;
     hideShowMainMenu('show');
     gameState.mapHide = true;
-    isPaused = false;
+    gameState.isPaused = false;
     startGameFromFirstLevel();
     player.x = startX;
     player.y = startY;
-    // player.dir = 0;
     keys.w = false; keys.s = false; keys.a = false; keys.d = false;
     updateUI();
     document.getElementById('menuOverlay').style.display = 'none';
@@ -93,10 +100,13 @@ window.mainMenuGame = function(){
 window.restartGame = function(){
     // Сбрасываем состояние
     gameState.score = 0;
-    // gameState.timeLeft = 60 * 1000;
     gameState.gameActive = true;
     gameState.mapHide = true;
-    isPaused = false;
+    gameState.isPaused = false;
+
+    player.speedMult = 1;
+    player.isStunned = false;
+    player.lastTurnDelta = 0;
     
     // Перезагружаем карту, предметы, таблички
     loadLevel(currentLevelIndex);
@@ -111,18 +121,9 @@ window.restartGame = function(){
 
 window.resumeGame = function() {
     if (!gameState.gameActive) return;
-    isPaused = false;
+    gameState.isPaused = false;
     document.getElementById('menuOverlay').style.display = 'none';
 };
-
-export function showMenu(title, message, showResume = true) {
-    const overlay = document.getElementById('menuOverlay');
-    document.getElementById('menuTitle').innerText = title;
-    document.getElementById('menuMessage').innerText = message;
-    document.getElementById('resumeBtn').style.display = showResume ? 'block' : 'none';
-    overlay.style.display = 'flex';
-    isPaused = true;
-}
 
 function showMenuBtn(show){
     if (menuBtn) {
@@ -132,7 +133,7 @@ function showMenuBtn(show){
 
 // Функции управления модалками
 function showModal(modal){
-    console.log(modal)
+    // console.log(modal)
     if (modal){
         // Скрываем все модалки перед показом новой
         document.querySelectorAll('.modal, .modal_set').forEach(m => m.style.display = 'none');
@@ -259,8 +260,13 @@ function applyHandednessLayout() {
 
     if (!container || !readBtn || !openBtn) return;
 
-    isRightHand === true ? container.classList.add('right-hand') : container.classList.remove('right-hand');
-    isRightHand === true ? conBtn.classList.add('right-hand') : conBtn.classList.remove('right-hand');
+    if (gameState.controlMode === 'dpad'){
+        isRightHand === true ? container.classList.add('right-hand') : container.classList.remove('right-hand');
+        isRightHand === true ? conBtn.classList.add('right-hand') : conBtn.classList.remove('right-hand');
+    } else if (gameState.controlMode === 'joystick') {
+        isRightHand === true ? joystickZone.classList.add('right-hand') : joystickZone.classList.remove('right-hand');
+        isRightHand === true ? conBtn.classList.add('right-hand') : conBtn.classList.remove('right-hand');
+    }
     if (screen.orientation.type === 'landscape-primary'){
         isRightHand === true ? readBtn.style.transform = 'rotateY(180deg)' : readBtn.style.transform = 'rotateY(0)';
         isRightHand === true ? openBtn.style.transform = 'rotateY(180deg)' : openBtn.style.transform = 'rotateY(0)';
@@ -317,8 +323,44 @@ function resizeCanvas(canvas) {
 }
 
 const creatorModal = document.getElementById('aboutOurs');
-const settingsModal = document.getElementById('settingsModal')
-const rightHandToggle = document.getElementById('rightHandToggle')
+const settingsModal = document.getElementById('settingsModal');
+const rightHandToggle = document.getElementById('rightHandToggle');
+const joystickToggle = document.getElementById('joystickToggle');
+const touchControls = document.getElementById('touchControls');
+const joystickZone = document.getElementById('joystickZone')
+
+const isTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window || navigator.userAgent.includes('Mobile');
+function updateControlsVisibility() {
+    if (!isTouch) {
+        // 🖥️ ПК: скрываем всё тач-управление
+        if (touchControls) touchControls.style.display = 'none';
+        if (joystickZone) joystickZone.style.display = 'none';
+        gameState.controlMode = 'dpad';
+        document.getElementById('jT').style.background = `rgb(90, 90, 0)`;
+        document.getElementById('jTText1').style.display = 'none';
+        document.getElementById('jTText2').style.display = 'none';
+        document.getElementById('jTPC').style.display = 'flex';
+        joystickToggle.disabled = true;
+        return;
+    }
+    
+    // 📱 Мобилка: показываем только выбранный режим
+    const mode = gameState.controlMode;
+    joystickToggle.disabled = false;
+    document.getElementById('jTText1').style.display = 'block';
+    document.getElementById('jTText2').style.display = 'block';
+    document.getElementById('jTPC').style.display = 'none';
+    document.getElementById('jT').style.background = `rgb(0, 0, 255)`;
+    if (touchControls) touchControls.style.display = (mode === 'dpad') ? 'flex' : 'none';
+    if (joystickZone) joystickZone.style.display = (mode === 'joystick') ? 'block' : 'none';
+}
+
+// Вызываем при старте
+updateControlsVisibility();
+
+const controlMode = localStorage.getItem('controlMode') || ('dpad');
+gameState.controlMode = controlMode;
+
 let isRightHand = true;
 const saved = localStorage.getItem('Hand')
 if (saved !== null){
@@ -334,20 +376,40 @@ if (rightHandToggle) {
     })
 }
 
+if (joystickToggle){
+    joystickToggle.checked = controlMode === 'joystick'
+}
+
+if (touchControls){
+    touchControls.style.display = controlMode === 'dpad' ? 'flex' : 'none';
+}
+
+if (joystickZone){
+    joystickZone.style.display = controlMode === 'joystick' ? 'block' : 'none';
+}
+
 document.getElementById('restartBtn').addEventListener('click', () => window.restartGame());
 document.getElementById('resumeBtn').addEventListener('click', () => window.resumeGame());
 document.getElementById('backToMainMenu').addEventListener('click', () => window.mainMenuGame());
 document.getElementById('aboutOursBtn').addEventListener('click', () => showModal(creatorModal));
 document.getElementById('settingBtn').addEventListener('click', () => showModal(settingsModal));
+joystickToggle.addEventListener('change', (e) => {
+    const mode = e.target.checked ? 'joystick' : 'dpad';
+    localStorage.setItem('controlMode', mode);
+    gameState.controlMode = mode;
+    updateControlsVisibility(); // ✅ Обновляем видимость
+})
+
 menuBtn.addEventListener('click', () => {
-    if (gameState.gameActive && !isPaused) {
+    if (gameState.gameActive && !gameState.isPaused) {
         showMenu('Пауза', 'Игра приостановлена', true);
-    } else if (isPaused) {
+    } else if (gameState.isPaused) {
         resumeGame();
     }
 })
 
 window.onload = () => {
+    initJoystick();
     applyHandednessLayout();
     startLoadingTextures();
 
@@ -366,11 +428,8 @@ window.onload = () => {
         showMenuBtn(true);
         gameState.gameActive = true;
         gameState.score = 0;
-        // gameState.timeLeft = 90 * 1000;
         updateUI();
-        // player.dir = 0;
         keys.w = false; keys.a = false; keys.s = false; keys.d = false;
-        // initMap();
         lastTimestamp = 0;
         lastTimerUpdate = 0;
     })
@@ -386,9 +445,9 @@ window.onload = () => {
 
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            if (gameState.gameActive && !isPaused) {
+            if (gameState.gameActive && !gameState.isPaused) {
                 showMenu('Пауза', 'Игра приостановлена', true);
-            } else if (isPaused) {
+            } else if (gameState.isPaused) {
                 resumeGame();
             }
             e.preventDefault();
@@ -401,7 +460,7 @@ window.onload = () => {
     let lastTimerUpdate = 0;
     gameState.mapHide = true;
     function gameLoop(now) {
-        if (isPaused) {
+        if (gameState.isPaused) {
             requestAnimationFrame(gameLoop);
             return;
         }
@@ -411,7 +470,7 @@ window.onload = () => {
             handleMovement(delta);
         }
         // Таймер обновляется только если игра активна и не на паузе
-        if (now - lastTimerUpdate >= 1000 && gameState.gameActive && !isPaused) {
+        if (now - lastTimerUpdate >= 1000 && gameState.gameActive && !gameState.isPaused) {
             if (currentLevelConfig?.timeLimit !== null && currentLevelConfig?.timeLimit !== undefined) {
                 gameState.timeLeft -= 1000;
                 if (gameState.timeLeft <= 0) {
@@ -423,7 +482,7 @@ window.onload = () => {
             updateUI();
             lastTimerUpdate = now;
         }
-        if (gameState.gameActive && !isPaused && gameState.enemies?.length){
+        if (gameState.gameActive && !gameState.isPaused && gameState.enemies?.length){
             gameState.enemies.forEach(enemy => {
                 enemy.update(player, delta, solidMap, now);
             })

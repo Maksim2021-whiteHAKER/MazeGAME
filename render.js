@@ -210,8 +210,8 @@ export function draw3D(canvas, ctx, solidMap, player) {
 export function drawMinimap(ctx, w, h, solidMap, items, player){
     const mapW = solidMap[0].length;
     const mapH = solidMap.length;
-    const cellSize = 4;
-    const offsetX = 10; const offsetY = 10;
+    const cellSize = 7;
+    const offsetX = 10; const offsetY = 20;
     for (let y = 0; y < mapH; y++){
         for (let x = 0; x < mapW; x++){
             if (solidMap[y][x] === 1){
@@ -241,6 +241,13 @@ export function drawMinimap(ctx, w, h, solidMap, items, player){
             ctx.fillStyle = '#88f';
         }
         ctx.fillRect(offsetX + sign.x * cellSize, offsetY + sign.y * cellSize, cellSize-1, cellSize-1);
+    }
+
+    if (gameState.enemies.length){
+        ctx.fillStyle = '#ffaaa0';
+        for (const enemy of gameState.enemies){
+            ctx.fillRect(offsetX + enemy.x * cellSize, offsetY + enemy.y * cellSize, cellSize-1, cellSize-1)
+        }    
     }
     ctx.fillStyle = `cyan`;
     ctx.fillRect(offsetX + player.x * cellSize -1, offsetY + player.y * cellSize -1, cellSize, cellSize)

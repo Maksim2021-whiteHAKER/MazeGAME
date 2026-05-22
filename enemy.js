@@ -1,8 +1,7 @@
 // enemy.js
 import { maxDist, WALL_OFFSET } from "./gameConfig.js";
 import { textures } from "./loadTextures.js";
-import { gameState, updateUI } from "./ui.js";
-import { showMenu } from './main.js';
+import { gameState, updateUI, showMenu } from "./ui.js";
 import { ENEMY_CONFIG } from "./enemyConfig.js";
 
 export class Enemy {
@@ -29,7 +28,10 @@ export class Enemy {
     update(player, delta, solidMap, currentTime){
         // проверка видимости (луч из player в enemy)
         const visible = this.isPlayerLookingAt(player, solidMap);
-        if (visible){
+
+        const shouldStop = visible && this.config.stopWhenWatching;
+
+        if (shouldStop){
             this.lastSeentime += delta;
             this.isVisible = true;
             // Guard - scp173(прототип) - базовая логика
@@ -38,7 +40,6 @@ export class Enemy {
                 this.teleportCooldown = this.config.teleportCooldown;
                 this.lastSeentime = 0;
             }
-
             this.handleEyeEffect(player);
         } else {
             this.isVisible = false;
@@ -67,10 +68,10 @@ export class Enemy {
                 case 'time_eater': showMenu('ЖИЗНЬ ОПУСТОШЕНА', 'Из тебя высосали даже последние секунды жизни', false); break; 
                 case 'eye_fear': showMenu('ВЗГЛЯД СМЕРТИ', 'Око страха поглотило твой разум и душу... не стоило смотреть слишком долго', false); break;
                 case 'fog_death': showMenu('КИСЛОТНЫЙ ТУМАН', 'Туман растворил тебя, кости обратились в жижу кальция', false); break;
-                case 'skeleton': showMenu('КОСТЯНОЕ БРАТСТВО', 'Тебя разорвали скелеты, вырыв кости из плоти. Теперь ты невольный страж лабиринта.', false); break;
+                case 'skeleton': showMenu('КОСТЯНОЕ БРАТСТВО', 'Тебя разорвали скелеты, вырвав кости из плоти. Теперь ты невольный страж лабиринта.', false); break;
                 case 'rune_keeper': showMenu('ЖИВАЯ СТЕНА', 'Ты вошёл в мнимую стену, но так и не вышел. Тебя разорвал камень изнутри.', false); break;
                 case 'mimic': showMenu('КТО Я?', 'Мимик стал тобой и живёт. А существовал ли ты? Уже неважно, теперь ты копия-ловушка следующего человека.', false); break;
-            };
+            }
         }
     }
 
@@ -105,7 +106,7 @@ export class Enemy {
         const dx = player.x - this.x;
         const dy = player.y - this.y;
         const dist = Math.hypot(dx, dy);
-        if (dist < 0.5) return;
+        if (dist < 0.15) return;
 
         const speed = this.config.speed;
         const moveX = (dx / dist) * speed * delta;
@@ -114,7 +115,7 @@ export class Enemy {
         // проверка по X
         const nextCellX = Math.floor(this.x + moveX + (moveX > 0 ? WALL_OFFSET : -WALL_OFFSET));
         const cellY = Math.floor(this.y);
-        if (cellY >= 0 && cellY < solidMap.length && nextCellX >= 0 && nextCellX < solidMap[0].length && solidMap[cellY][nextCellX]) {
+        if (cellY >= 0 && cellY < solidMap.length && nextCellX >= 0 && nextCellX < solidMap[0].length) {
             const tileX = solidMap[cellY][nextCellX]
             const passable = (tileX === 0 || (this.config.canPassDoors && tileX === 3) || (this.config.canPassWalls && tileX !== 1 && tileX !== 2));
             if (passable) this.x += moveX;
@@ -123,7 +124,7 @@ export class Enemy {
         // проверка по Y
         const cellX = Math.floor(this.x);
         const nextCellY = Math.floor(this.y + moveY + (moveY > 0 ? WALL_OFFSET : -WALL_OFFSET));
-        if (nextCellY >= 0 && nextCellY < solidMap.length && cellX >= 0 && cellX < solidMap[0].length && solidMap[nextCellY][cellX]){
+        if (nextCellY >= 0 && nextCellY < solidMap.length && cellX >= 0 && cellX < solidMap[0].length){
             const tileY = solidMap[nextCellY][cellX];
             const passable = (tileY === 0 || (this.config.canPassDoors && tileY === 3) || (this.config.canPassWalls && tileY !== 1 && tileY !== 2));
             if (passable) this.y += moveY;

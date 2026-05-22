@@ -8,6 +8,8 @@ export const gameState = {
    timeLeft: 60 * 1000,
    gameActive: true,
    mapHide: true,
+   isPaused: false,
+   controlMode: 'dpad',
    enemies: [],
    currentWallTexture: null,
    floorGradientTop: 'rgb(110, 73, 30)',
@@ -36,6 +38,15 @@ export function showMessage(text, time = 4000) {
     messageTimeout = setTimeout(() => {
         msgDiv.style.opacity = '0';
     }, time);
+}
+
+export function showMenu(title, message, showResume = true) {
+    const overlay = document.getElementById('menuOverlay');
+    document.getElementById('menuTitle').innerText = title;
+    document.getElementById('menuMessage').innerText = message;
+    document.getElementById('resumeBtn').style.display = showResume ? 'block' : 'none';
+    overlay.style.display = 'flex';
+    gameState.isPaused = true;
 }
 
 export function collectionItemAt(x, y){

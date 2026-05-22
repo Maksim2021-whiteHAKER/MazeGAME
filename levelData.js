@@ -1,5 +1,4 @@
-import { startX, startY } from "./mapData.js";
-
+// levelData.js
 const alphaMap = [
     "WWWWWWWWWWWWWWWWWWWW",
     "WWWWWWW    C       D",
@@ -49,6 +48,27 @@ const labyrinthLv0 = [
 
 const labyrinthLv1 = [
     "WWWWWWWWWWWW",
+    "W        WGW",
+    "W          W",
+    "W >        W",
+    "WWWWWWWWWWWW",
+]
+
+const labLv2 = [
+    "WWWWWWWWWWW",
+    "WvWWWWW   W",
+    "W WWWW WWWW",
+    "W  W   WWWW",
+    "W WW WWWWWW",
+    "W      WWWW",
+    "W W WRWWWWW",
+    "WWW WrWWWWW",
+    "WWD WrrrGWW",
+    "WWWWWWWWWWW", 
+]
+
+const labLv3 = [
+    "WWWWWWWWWWWW",
     "W          W",
     "W          W",
     "W ^        W",
@@ -72,7 +92,6 @@ export const levelsData = [
     { // 0 уровень: дом
         name: "дом",
         map: houseMap, 
-        // startX: 2, startY: 2, 
         dir: 0, timeLimit: null, enemies: [], 
         theme: {
             wallTexture: 'wall_wood',
@@ -93,7 +112,7 @@ export const levelsData = [
         }
     },
     { // 2 уровень: лабиринт ур 1
-        name: "Лабиринт ур 1", map: labyrinthLv1, timeLimit: 120 * 1000, enemies: [{ x: 2, y: 2, type: 'skeleton' }],
+        name: "Лабиринт ур 1", map: labyrinthLv1, timeLimit: 120 * 1000, enemies: [{ x: 8, y: 3, type: 'skeleton' }],
         theme: {
             wallTexture: 'wall_rune',
             floorGradientTop: 'rgb(60, 40, 70)',
@@ -102,6 +121,28 @@ export const levelsData = [
 
         }
     },
+    {
+        // 3 уровень: лабиринт ур 2
+        name: "Лаб ур 2", map: labLv2, timeLimit: 140 * 1000, enemies: [{ x: 8, y: 1, type: 'skeleton' }],
+        theme: {
+            wallTexture: 'wall_rune',
+            floorGradientTop: 'rgb(60, 40, 70)',
+            floorGradientBottom: 'rgb(20, 15, 30)',
+            ceilingColor: 'rgb(10, 10, 14)'
+
+        }
+    },
+    {
+        // 4 уровень: лабиринт ур 2
+        name: "Лаб ур 3", map: labLv3, timeLimit: 140 * 1000, enemies: [{ x: 8, y: 1, type: 'skeleton' }],
+        theme: {
+            wallTexture: 'wall_rune',
+            floorGradientTop: 'rgb(60, 40, 70)',
+            floorGradientBottom: 'rgb(20, 15, 30)',
+            ceilingColor: 'rgb(10, 10, 14)'
+
+        }
+    },    
     { // Ловушка: бесконечный лабиринт (без таймера)
         // name: "Бесконечный лабиринт", map: generateInfiniteLabyrinth(), startX: 1.5, startY: 1.5, timeLimit: null, enemies: [{ x: 5, y: 5, type: 'chaser' }]
     }
