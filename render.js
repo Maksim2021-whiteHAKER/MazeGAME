@@ -200,7 +200,12 @@ export function draw3D(canvas, ctx, solidMap, player) {
         const da = Math.hypot(a.x - player.x, a.y - player.y);
         const db = Math.hypot(b.x - player.x, b.y - player.y);
         return db - da;
-    }).forEach(enemy => enemy.draw(ctx, w, h, player));
+    }).forEach(enemy => {
+        // Проверка: нет ли стены между игроком и предметом
+        if (isVisible(player.x, player.y, enemy.x, enemy.y, solidMap)){
+            enemy.draw(ctx, w, h, player);
+        }
+    })
     
     if (gameState.mapHide){
         drawMinimap(ctx, w, h, solidMap, items, player);
@@ -243,12 +248,13 @@ export function drawMinimap(ctx, w, h, solidMap, items, player){
         ctx.fillRect(offsetX + sign.x * cellSize, offsetY + sign.y * cellSize, cellSize-1, cellSize-1);
     }
 
-    if (gameState.enemies.length){
-        ctx.fillStyle = '#ffaaa0';
-        for (const enemy of gameState.enemies){
-            ctx.fillRect(offsetX + enemy.x * cellSize, offsetY + enemy.y * cellSize, cellSize-1, cellSize-1)
-        }    
-    }
+    // if (gameState.enemies.length){
+    //     ctx.fillStyle = '#ffaaa0';
+    //     for (const enemy of gameState.enemies){
+    //         ctx.fillRect(offsetX + enemy.x * cellSize, offsetY + enemy.y * cellSize, cellSize-1, cellSize-1)
+    //     }    
+    // }
+
     ctx.fillStyle = `cyan`;
     ctx.fillRect(offsetX + player.x * cellSize -1, offsetY + player.y * cellSize -1, cellSize, cellSize)
 }

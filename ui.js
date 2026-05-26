@@ -9,6 +9,7 @@ export const gameState = {
    gameActive: true,
    mapHide: true,
    isPaused: false,
+   isCutScene: false,
    controlMode: 'dpad',
    enemies: [],
    currentWallTexture: null,

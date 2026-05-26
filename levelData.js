@@ -50,6 +50,10 @@ const labyrinthLv1 = [
     "WWWWWWWWWWWW",
     "W        WGW",
     "W          W",
+    "W          W",
+    "W          W",
+    "W          W",
+    "W          W",
     "W >        W",
     "WWWWWWWWWWWW",
 ]

@@ -1,7 +1,7 @@
 // loadTextures.js
 export let textures = {};
 export let texturesLoaded = 0;
-export const totalTextures = 14; // сколько всего текстур загружаем
+export const totalTextures = 15; // сколько всего текстур загружаем
 export let wallRuneImageData = null;
 export let doorImageData = null;
 export let gDoorImage = null;
@@ -17,6 +17,7 @@ export let wallWoodImageData = null;
 export let aDoorImageData = null;
 export let aDoorRuneImageData = null;
 export let bDoorImageData = null;
+export let skeletonImageData = null;
 
 export function prepareTexture(img) {
     const offCanvas = document.createElement('canvas');
@@ -47,6 +48,7 @@ export function loadTextures(name, url) {
             case 'aDoor': aDoorImageData = prepareTexture(img); break;
             case 'aDoor_rune': aDoorRuneImageData = prepareTexture(img); break;
             case 'bDoor': bDoorImageData = prepareTexture(img); break;
+            case 'skeleton': skeletonImageData = prepareTexture(img); break;
         } 
         if (texturesLoaded === totalTextures -1) { // - sign
             console.log('✅ Все текстуры загружены');
@@ -73,4 +75,5 @@ export function startLoadingTextures() {
     loadTextures('aDoor', 'textures/door_alpha.jpg');
     loadTextures('aDoor_rune', 'textures/door_alpha_end.jpg')
     loadTextures('bDoor', 'textures/door_beta.jpg');
+    loadTextures('skeleton', 'textures/enemy/skeleton_frame.png')
 }

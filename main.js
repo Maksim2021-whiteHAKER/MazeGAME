@@ -158,6 +158,60 @@ document.querySelectorAll('.close-btn, .close-btnWF').forEach(btn => {
     }
 });
 
+function lookBehindDoor(doorX, doorY){
+    gameState.isCutScene = true;
+    gameState.mapHide = false;
+
+    const safeDistanceDoor = 3.5;
+    const distToDoor = Math.hypot(player.x - doorX, player.y - doorY);
+
+    if (distToDoor < safeDistanceDoor){
+        const dx = player.x - doorX;
+        const dy = player.y - doorY;
+        let len = Math.hypot(dx, dy) || 1
+
+        player.x = doorX + (dx / len) * safeDistanceDoor;
+        player.y = doorY + (dy / len) * safeDistanceDoor;
+    }
+
+    function rotateTo(targetDir, duration, callback){
+        const startDir = player.dir;
+        let startTime = performance.now();
+        function animate(time){
+            let elapsed = (time - startTime) / duration;
+            if (elapsed > 1) elapsed = 1;
+            let diff = targetDir - startDir;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            player.dir = startDir + diff * elapsed;
+            if (elapsed < 1){
+                requestAnimationFrame(animate);
+            } else {
+                player.dir = targetDir;
+                if (callback) callback();
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    const originalDir = player.dir;
+    rotateTo(originalDir + Math.PI, 400, () => {
+        setTimeout(() => {
+            solidMap[doorY][doorX] = 3;
+            rotateTo(originalDir, 400, () => {
+                gameState.isCutScene = false;
+                gameState.mapHide = true;
+                updateUI();
+                rotateTo(originalDir + 2*Math.PI, 400, () =>{
+                    rotateTo(originalDir, 400, () => {
+                        updateUI();
+                    })
+                })
+            });
+        }, 1000);
+    });
+}
+
 function onRead() {
     const target = getTargetCell();
     if (target){
@@ -188,15 +242,21 @@ function onOpen() {
     // ЛОГИКА ДЛЯ ДВЕРЕЙ (тип клетки может быть 1 или 2, но главное - наличие предмета)
     if (doorItem) {
         if (doorItem.variant === 'true_door') { // Реальная дверь (желтый треугольник)
-            solidMap[y][x] = 3; // Убираем стену (или оставляем как портал, если хочешь эффект)
+            const doorX = x;
+            const doorY = y;
+            lookBehindDoor(doorX, doorY);
             doorItem.opened = true;
+            
             updateUI();
             return;
             
         } else if (doorItem.variant === 'fake_door') { // Ловушка (темный треугольник)
             if (isBeta){
-                solidMap[y][x] = 3;
+                const doorX = x;
+                const doorY = y;
+                lookBehindDoor(doorX, doorY);
                 doorItem.opened = true;
+                
                 // gameState.score -= doorItem.value;
                 // showMessage('тут будет ловушка');
 
@@ -217,11 +277,16 @@ function onOpen() {
         } else if (doorItem.type === 'portal'){
             switch (doorItem.target){
                 case 'alpha_lvl':{
-                    solidMap[y][x] = 3; 
+                    const doorX = x;
+                    const doorY = y;
+                    lookBehindDoor(doorX, doorY);
                     doorItem.opened = true; //loadLevel(0, true); break;
+                    break;
                 } 
                 case 'alpha_end':{
-                    solidMap[y][x] = 3;
+                    const doorX = x;
+                    const doorY = y;
+                    lookBehindDoor(doorX, doorY);
                     doorItem.opened = true;
                     // console.log('main.js: alpha_end -',doorItem.opened, "SM:", solidMap)
                     // gameState.gameActive = false;   
@@ -230,7 +295,9 @@ function onOpen() {
                 } 
                 case 'beta_lvl': {
                     // переход на бета-уровни (с врагами)
-                    solidMap[y][x] = 3; 
+                    const doorX = x;
+                    const doorY = y;
+                    lookBehindDoor(doorX, doorY);
                     doorItem.opened = true;
                     break;
                 }
@@ -464,6 +531,12 @@ window.onload = () => {
             requestAnimationFrame(gameLoop);
             return;
         }
+        if (gameState.isCutScene){
+            draw3D(canvas, ctx, solidMap, player);
+            requestAnimationFrame(gameLoop);
+            return
+        }
+
         if (!lastTimestamp) lastTimestamp = now;
         const delta = Math.min(100, now - lastTimestamp) / 1000;
         if (gameState.gameActive) {

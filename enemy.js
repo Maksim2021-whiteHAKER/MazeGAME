@@ -23,6 +23,12 @@ export class Enemy {
         this.teleportCooldown = 0;
         this.stateTimer = 0;
         this.illusionActive = false; // для хранителя рун
+
+        // animate
+        this.totalFrames = 3;
+        this.frameIndex = 0;
+        this.animTimer = 0;
+        this.frameDuration = 0.75;
     }
 
     update(player, delta, solidMap, currentTime){
@@ -46,6 +52,12 @@ export class Enemy {
             this.lastSeentime = Math.max(0, this.lastSeentime - delta * 0.5);
             // Движение к игроку (поиск пути или прямое смещение с проверкой стен)
             this.moveTowards(player, delta, solidMap);
+        }
+
+        this.animTimer += delta;
+        if (this.animTimer >= this.frameDuration){
+            this.animTimer = 0;
+            this.frameIndex = (this.frameIndex + 1) % this.totalFrames;
         }
 
         this.teleportCooldown = Math.max(0, this.teleportCooldown - delta);
@@ -168,14 +180,19 @@ export class Enemy {
         while (angle > Math.PI) angle -= 2 * Math.PI;
 
         if (Math.abs(angle) > Math.PI / 3) return;
-
+        
         const spriteH = (h / dist) * 0.8;
 
         const screenX = (0.5 + angle / (Math.PI / 3)) * w;
         const screenY = (h - spriteH) / 2;
-
+        
         const tex = textures[this.type] || textures['enemy'];
-        if (tex?.complete) ctx.drawImage(tex, screenX - (spriteH/2), screenY, spriteH, spriteH);
+        const frameW = tex.width / this.totalFrames;
+        const sx = this.frameIndex * frameW;
+        if (tex?.complete) ctx.drawImage(
+            tex, sx, 0, frameW, tex.height, 
+            screenX - spriteH/2, screenY, 
+            spriteH, spriteH);
     }
 
     handleEyeEffect(player){
