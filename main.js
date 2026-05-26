@@ -163,11 +163,14 @@ function lookBehindDoor(doorX, doorY){
     gameState.mapHide = false;
 
     const safeDistanceDoor = 3.5;
+    const saveDx = player.x;
+    const saveDy = player.y;
     const distToDoor = Math.hypot(player.x - doorX, player.y - doorY);
 
     if (distToDoor < safeDistanceDoor){
         const dx = player.x - doorX;
         const dy = player.y - doorY;
+        
         let len = Math.hypot(dx, dy) || 1
 
         player.x = doorX + (dx / len) * safeDistanceDoor;
@@ -201,6 +204,8 @@ function lookBehindDoor(doorX, doorY){
             rotateTo(originalDir, 400, () => {
                 gameState.isCutScene = false;
                 gameState.mapHide = true;
+                player.x = saveDx;
+                player.y = saveDy;
                 updateUI();
                 rotateTo(originalDir + 2*Math.PI, 400, () =>{
                     rotateTo(originalDir, 400, () => {

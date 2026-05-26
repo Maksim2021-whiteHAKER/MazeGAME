@@ -60,7 +60,7 @@ const labyrinthLv1 = [
 
 const labLv2 = [
     "WWWWWWWWWWW",
-    "WvWWWWW   W",
+    "WvWWWW    W",
     "W WWWW WWWW",
     "W  W   WWWW",
     "W WW WWWWWW",
