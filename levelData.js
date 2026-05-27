@@ -24,7 +24,7 @@ const alphaMap = [
 ];
 
 const houseMap = [
-    "WWaWbWW",
+    "WWahbWW",
     "W     W",
     "W     W",
     "W  0  W",

@@ -22,7 +22,7 @@ export function initMap(levelMap){
         for (let x = 0; x < row.length; x++){
             const sh = row[x];
             let tile = 0;
-            if (sh === 'W' || sh === 'N' || sh === 'G' || sh === 'D' || sh === 'a' || sh === 'b' || sh === 'A') tile = 1;
+            if (sh === 'W' || sh === 'N' || sh === 'G' || sh === 'D' || sh === 'a' || sh === 'b' || sh === 'A' || sh === 'h') tile = 1;
             else if (sh === 'R' || sh === 'S' ) tile = 2;
             else tile = 0;
             solidMap[y][x] = tile;
@@ -57,7 +57,9 @@ export function initMap(levelMap){
             } else if (sh === 'G'){ // g/п т.е п - правильная дверь
                 items.push({x, y, type: 'door', variant: 'true_door', value: 500, win: true, opened: false});
             } else if (sh === 'N'){
-                signs.push({x, y, type: 'secret', text: "Мини подсказка: нажми на 'O' перед странной стеной", });
+                signs.push({x, y, type: 'secret', message: 'wall', text: "Мини подсказка: нажми на 'O' перед странной стеной", });
+            } else if (sh === 'h') {
+                signs.push({x, y, type: 'secret', message: 'hint', text: "<- Открыть дверь нажать 'О' ->\n <- Open door press 'O' ->"});
             } else if (sh === 'n'){
                 signs.push({x, y, type: 'usually', text: "Добро пожаловать в лабиринт!\nСобери монеты и найди выход. \nчитать таблички 'e'"})
             } else if (sh === '0'){

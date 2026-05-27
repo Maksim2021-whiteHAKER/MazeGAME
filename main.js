@@ -10,6 +10,107 @@ import { setMaxDist } from "./gameConfig.js";
 import { currentLevelConfig, currentLevelIndex, isBeta, loadLevel, startGameFromFirstLevel } from "./levels.js";
 import { getENV } from "./env.js";
 
+// звуковой контроллер
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+let menuMusic = null;
+let menuMusicSource = null;
+let isMenuMusicPlaying = false;
+let isAudioUnlocked = false;
+
+async function loadMenuMusic(){
+    try {
+        const response = await fetch('sounds/lab_96kbps.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        menuMusic = audioBuffer;
+        // console.log('✅ Музыка меню загружена');
+    } catch (err) {
+        console.warn('⚠️ Не удалось загрузить музыку меню:', err);
+    }
+}
+
+function playMenuMusic() {
+    if (!menuMusic || isMenuMusicPlaying) return;
+    
+    // 🔁 Если контекст приостановлен — возобновляем
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    
+    // Останавливаем предыдущий источник если есть
+    if (menuMusicSource) {
+        menuMusicSource.stop();
+    }
+    
+    menuMusicSource = audioContext.createBufferSource();
+    menuMusicSource.buffer = menuMusic;
+    menuMusicSource.loop = true;
+    
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0.3;
+    
+    menuMusicSource.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    menuMusicSource.start(0);
+    isMenuMusicPlaying = true;
+    console.log('🎵 Музыка меню играет');
+}
+
+function stopMenuMusic() {
+    if (!menuMusicSource || !isMenuMusicPlaying) return;
+    
+    // Плавное затухание
+    const gainNode = audioContext.createGain();
+    menuMusicSource.disconnect();
+    menuMusicSource.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+    
+    setTimeout(() => {
+        if (menuMusicSource) {
+            menuMusicSource.stop();
+            menuMusicSource = null;
+        }
+        isMenuMusicPlaying = false;
+    }, 300);
+}
+
+// 🔓 Разблокировка звука по первому клику
+function unlockAudio() {
+    if (isAudioUnlocked) return;
+    
+    if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            isAudioUnlocked = true;
+            console.log('🔓 Звук разблокирован');
+            // Если мы в меню — запускаем музыку
+            if (!gameState.gameActive) {
+                playMenuMusic();
+            }
+        });
+    } else {
+        isAudioUnlocked = true;
+        playMenuMusic();
+    }
+    
+    // Убираем обработчики после первого клика
+    document.removeEventListener('click', unlockAudio);
+    document.removeEventListener('touchstart', unlockAudio);
+    document.removeEventListener('keydown', unlockAudio);
+}
+
+// Вместо этого — добавьте только ОДИН раз при загрузке:
+window.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    document.addEventListener('keydown', unlockAudio);
+});
+
 const betaBadge = document.getElementById('betaBadge')
 betaBadge.style.display = 'flex';
 
@@ -95,6 +196,9 @@ window.mainMenuGame = function(){
     keys.w = false; keys.s = false; keys.a = false; keys.d = false;
     updateUI();
     document.getElementById('menuOverlay').style.display = 'none';
+    setTimeout(() => {
+        playMenuMusic();
+    }, 300)
 }
 
 window.restartGame = function(){
@@ -400,6 +504,8 @@ const rightHandToggle = document.getElementById('rightHandToggle');
 const joystickToggle = document.getElementById('joystickToggle');
 const touchControls = document.getElementById('touchControls');
 const joystickZone = document.getElementById('joystickZone')
+const dpadZone = document.getElementById('dpad');
+const btnZone = document.getElementById('act-btns');
 
 const isTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window || navigator.userAgent.includes('Mobile');
 function updateControlsVisibility() {
@@ -407,6 +513,8 @@ function updateControlsVisibility() {
         // 🖥️ ПК: скрываем всё тач-управление
         if (touchControls) touchControls.style.display = 'none';
         if (joystickZone) joystickZone.style.display = 'none';
+        if (dpadZone) dpadZone.style.display = 'none';
+        if (btnZone) btnZone.style.display = 'none';
         gameState.controlMode = 'dpad';
         document.getElementById('jT').style.background = `rgb(90, 90, 0)`;
         document.getElementById('jTText1').style.display = 'none';
@@ -484,6 +592,7 @@ window.onload = () => {
     initJoystick();
     applyHandednessLayout();
     startLoadingTextures();
+    loadMenuMusic();
 
     let startBtn = document.getElementById('startBtn'); 
     hideShowMainMenu('show');
@@ -495,6 +604,7 @@ window.onload = () => {
     startBtn.addEventListener('click', async () => {
         await lockLandscapeOrientation();
         hideOrientationOverlay();
+        stopMenuMusic();
 
         hideShowMainMenu('off');
         showMenuBtn(true);
@@ -570,3 +680,28 @@ window.onload = () => {
     }
     requestAnimationFrame(gameLoop)
 };
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // Останавливаем звук при уходе в фон
+        if (isMenuMusicPlaying && menuMusicSource) {
+            menuMusicSource.stop();
+            menuMusicSource = null;
+            isMenuMusicPlaying = false;
+        }
+    } else {
+        // При возврате вкладки:
+        if (!gameState.gameActive && menu) {
+            // Проверяем, разблокирован ли звук
+            if (isAudioUnlocked) {
+                // Запускаем музыку после небольшой задержки
+                setTimeout(() => {
+                    playMenuMusic();
+                }, 100);
+            } else {
+                // Если не разблокирован — ждём первого клика
+                console.log('⚠️ Звук не разблокирован, ждём клика');
+            }
+        }
+    }
+});

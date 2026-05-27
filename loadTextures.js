@@ -10,6 +10,7 @@ export let openDoorImageData = null;
 export let openWoodDoorImageData = null;
 export let signImageData = null;
 export let secretSignImageData = null;
+export let sSignWoodImageData = null;
 export let coinImageData = null;
 export let diamondImageData = null;
 export let timeImageData = null;
@@ -41,6 +42,7 @@ export function loadTextures(name, url) {
             case 's_door': secretDoorImageData = prepareTexture(img); break;
             case 'sign': signImageData = prepareTexture(img); break;
             case 's_sign': secretSignImageData = prepareTexture(img); break;
+            case 's_signWood':  sSignWoodImageData = prepareTexture(img); break;
             case 'coin': coinImageData = prepareTexture(img); break;
             case 'diamond': diamondImageData = prepareTexture(img); break;
             case 'time': timeImageData = prepareTexture(img); break;
@@ -68,6 +70,7 @@ export function startLoadingTextures() {
     loadTextures('o_door_wood', 'textures/openWood_door.png');
     // loadTextures('sign', 'textures/sign.jpg');
     loadTextures('s_sign', 'textures/s_sign.jpg');
+    loadTextures('s_signWood', 'textures/s_signWood.png');
     loadTextures('coin', 'textures/coin512.png');
     loadTextures('diamond', 'textures/diamond512.png');
     loadTextures('time', 'textures/plus_time.png');

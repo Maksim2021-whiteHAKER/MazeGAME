@@ -103,7 +103,16 @@ function getWallTextureForCell(cellX, cellY){
             case 'beta_lvl': return textures['bDoor'];
         }
     }
-    if (signItem) return signItem.type === 'secret' ? textures['s_sign'] : textures['sign'];
+    if (signItem){
+        if (signItem.type === 'secret'){
+            switch (signItem.message){
+                case 'wall': return textures['s_sign'];
+                case 'hint': return textures['s_signWood']
+            }
+        } else {
+            return textures['sign'];
+        }
+    }
     
     return gameState.currentWallTexture;
 }
