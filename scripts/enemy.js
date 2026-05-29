@@ -1,5 +1,5 @@
 // enemy.js
-import { maxDist, WALL_OFFSET } from "./gameConfig.js";
+import { WALL_OFFSET } from "./gameConfig.js";
 import { textures } from "./loadTextures.js";
 import { gameState, updateUI, showMenu } from "./ui.js";
 import { ENEMY_CONFIG } from "./enemyConfig.js";

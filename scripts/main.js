@@ -4,105 +4,12 @@ import { player, handleMovement, keys } from "./player.js";
 import { draw3D } from "./render.js";
 import { updateUI, showMessage, showMenu, gameState } from "./ui.js";
 import { getTargetCell } from "./raycast.js";
-import { initInput, initJoystick } from "./scripts/input.js";
-import { startLoadingTextures } from "./scripts/loadTextures.js";
-import { setMaxDist } from "./scripts/gameConfig.js";
-import { currentLevelConfig, currentLevelIndex, isBeta, loadLevel, startGameFromFirstLevel } from "./scripts/levels.js";
-import { getENV } from "./scripts/env.js";
-
-// звуковой контроллер
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-let menuMusic = null;
-let menuMusicSource = null;
-let isMenuMusicPlaying = false;
-let isAudioUnlocked = false;
-
-async function loadMenuMusic(){
-    try {
-        const response = await fetch('sounds/lab_96kbps.mp3');
-        const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        
-        menuMusic = audioBuffer;
-        // console.log('✅ Музыка меню загружена');
-    } catch (err) {
-        console.warn('⚠️ Не удалось загрузить музыку меню:', err);
-    }
-}
-
-function playMenuMusic() {
-    if (!menuMusic || isMenuMusicPlaying) return;
-    
-    // 🔁 Если контекст приостановлен — возобновляем
-    if (audioContext.state === 'suspended') {
-        audioContext.resume();
-    }
-    
-    // Останавливаем предыдущий источник если есть
-    if (menuMusicSource) {
-        menuMusicSource.stop();
-    }
-    
-    menuMusicSource = audioContext.createBufferSource();
-    menuMusicSource.buffer = menuMusic;
-    menuMusicSource.loop = true;
-    
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0.3;
-    
-    menuMusicSource.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    menuMusicSource.start(0);
-    isMenuMusicPlaying = true;
-    console.log('🎵 Музыка меню играет');
-}
-
-function stopMenuMusic() {
-    if (!menuMusicSource || !isMenuMusicPlaying) return;
-    
-    // Плавное затухание
-    const gainNode = audioContext.createGain();
-    menuMusicSource.disconnect();
-    menuMusicSource.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
-    
-    setTimeout(() => {
-        if (menuMusicSource) {
-            menuMusicSource.stop();
-            menuMusicSource = null;
-        }
-        isMenuMusicPlaying = false;
-    }, 300);
-}
-
-// 🔓 Разблокировка звука по первому клику
-function unlockAudio() {
-    if (isAudioUnlocked) return;
-    
-    if (audioContext.state === 'suspended') {
-        audioContext.resume().then(() => {
-            isAudioUnlocked = true;
-            console.log('🔓 Звук разблокирован');
-            // Если мы в меню — запускаем музыку
-            if (!gameState.gameActive) {
-                playMenuMusic();
-            }
-        });
-    } else {
-        isAudioUnlocked = true;
-        playMenuMusic();
-    }
-    
-    // Убираем обработчики после первого клика
-    document.removeEventListener('click', unlockAudio);
-    document.removeEventListener('touchstart', unlockAudio);
-    document.removeEventListener('keydown', unlockAudio);
-}
+import { initInput, initJoystick } from "./input.js";
+import { startLoadingTextures } from "./loadTextures.js";
+import { loadMenuMusic, playMenuMusic, stopMenuMusic, unlockAudio, handleVisibilityChange } from "./soundManager.js";
+import { setMaxDist } from "./gameConfig.js";
+import { currentLevelConfig, currentLevelIndex, isBeta, loadLevel, startGameFromFirstLevel } from "./levels.js";
+import { getENV } from "./env.js";
 
 // Вместо этого — добавьте только ОДИН раз при загрузке:
 window.addEventListener('DOMContentLoaded', () => {
@@ -682,26 +589,5 @@ window.onload = () => {
 };
 
 document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        // Останавливаем звук при уходе в фон
-        if (isMenuMusicPlaying && menuMusicSource) {
-            menuMusicSource.stop();
-            menuMusicSource = null;
-            isMenuMusicPlaying = false;
-        }
-    } else {
-        // При возврате вкладки:
-        if (!gameState.gameActive && menu) {
-            // Проверяем, разблокирован ли звук
-            if (isAudioUnlocked) {
-                // Запускаем музыку после небольшой задержки
-                setTimeout(() => {
-                    playMenuMusic();
-                }, 100);
-            } else {
-                // Если не разблокирован — ждём первого клика
-                console.log('⚠️ Звук не разблокирован, ждём клика');
-            }
-        }
-    }
+    handleVisibilityChange(!document.hidden);
 });
