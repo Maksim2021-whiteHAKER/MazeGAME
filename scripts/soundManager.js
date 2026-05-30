@@ -1,5 +1,3 @@
-import { gameState } from "./ui";
-
 // scripts/soundManager.js
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const sounds = {
