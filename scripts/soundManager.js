@@ -1,4 +1,6 @@
 // scripts/soundManager.js
+import { gameState } from "./ui.js";
+
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const sounds = {
     menu: 'sounds/lab_96kbps.mp3',
@@ -94,11 +96,9 @@ function unlockAudio() {
         audioContext.resume().then(() => {
             isAudioUnlocked = true;
             console.log('🔓 Звук разблокирован');
-            import("./ui.js").then(({gameState}) => {
-                if (!gameState.gameActive) {
-                    playMenuMusic();
-                }
-            });
+            if (!gameState.gameActive) {
+                playMenuMusic();
+            }
         });
     } else {
         isAudioUnlocked = true;
