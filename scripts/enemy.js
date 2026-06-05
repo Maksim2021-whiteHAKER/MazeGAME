@@ -3,6 +3,7 @@ import { WALL_OFFSET } from "./gameConfig.js";
 import { textures } from "./loadTextures.js";
 import { gameState, updateUI, showMenu } from "./ui.js";
 import { ENEMY_CONFIG } from "./enemyConfig.js";
+import { stopAmbient, stopClockSound } from "./soundManager.js";
 
 export class Enemy {
     constructor(x, y, type){
@@ -84,6 +85,8 @@ export class Enemy {
                 case 'rune_keeper': showMenu('ЖИВАЯ СТЕНА', 'Ты вошёл в мнимую стену, но так и не вышел. Тебя разорвал камень изнутри.', false); break;
                 case 'mimic': showMenu('КТО Я?', 'Мимик стал тобой и живёт. А существовал ли ты? Уже неважно, теперь ты копия-ловушка следующего человека.', false); break;
             }
+            stopClockSound();
+            stopAmbient();
         }
     }
 

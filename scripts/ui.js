@@ -1,5 +1,6 @@
 // ui.js
 import { solidMap, items } from "./mapData.js";
+import { playCoinSound, playDiamondSound } from "./soundManager.js";
 
 let messageTimeout = null;
 
@@ -58,8 +59,8 @@ export function collectionItemAt(x, y){
     items.splice(idx, 1); 
     
     switch (item.type) {
-        case 'coin': gameState.score += item.value; break;
-        case 'diamond': gameState.score += item.value; break;
+        case 'coin': gameState.score += item.value; playCoinSound(); break;
+        case 'diamond': gameState.score += item.value; playDiamondSound(); break;
         case 'time': gameState.timeLeft += item.time * 1000; break;
         case 'secret_road': {
             gameState.score += item.value;

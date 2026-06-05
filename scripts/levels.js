@@ -6,6 +6,7 @@ import { gameState, showMessage, showMenu } from "./ui.js";
 import { textures } from "./loadTextures.js";
 import { Enemy } from "./enemy.js";
 import { getENV } from "./env.js";
+import { playClockSound, startAmbient, stopAmbient, stopClockSound } from "./soundManager.js";
 
 export let currentLevelIndex = 0;
 export let currentLevelConfig = null;
@@ -27,7 +28,11 @@ export function loadLevel(index, alpha = false) {
     initMap(level.map);
     if (level.enemies?.length){
         gameState.enemies = level.enemies.map(e => new Enemy(e.x, e.y, e.type));
-    } else gameState.enemies = [];
+        playClockSound();
+    } else {
+        gameState.enemies = [];
+        stopClockSound();
+    }
     
     // Устанавливаем стартовые координаты игрока
     player.x = startX;
@@ -48,6 +53,8 @@ export function loadLevel(index, alpha = false) {
     // } else {
     //     console.log('Врагов нет, безопасно')
     // }
+    stopAmbient();
+    startAmbient(index);
     return true;
 }
 

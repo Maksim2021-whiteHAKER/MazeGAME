@@ -6,7 +6,7 @@ import { updateUI, showMessage, showMenu, gameState } from "./ui.js";
 import { getTargetCell } from "./raycast.js";
 import { initInput, initJoystick } from "./input.js";
 import { startLoadingTextures } from "./loadTextures.js";
-import { loadMenuMusic, playMenuMusic, stopMenuMusic, unlockAudio, handleVisibilityChange } from "./soundManager.js";
+import { playMenuMusic, stopMenuMusic, unlockAudio, handleVisibilityChange, startAmbient, stopAmbient, loadAmbientSounds, loadAllsounds } from "./soundManager.js";
 import { setMaxDist } from "./gameConfig.js";
 import { currentLevelConfig, currentLevelIndex, isBeta, loadLevel, startGameFromFirstLevel } from "./levels.js";
 import { getENV } from "./env.js";
@@ -103,6 +103,7 @@ window.mainMenuGame = function(){
     keys.w = false; keys.s = false; keys.a = false; keys.d = false;
     updateUI();
     document.getElementById('menuOverlay').style.display = 'none';
+    stopAmbient();
     setTimeout(() => {
         playMenuMusic();
     }, 300)
@@ -495,15 +496,15 @@ menuBtn.addEventListener('click', () => {
     }
 })
 
-window.onload = () => {
+window.onload = async () => {
     initJoystick();
     applyHandednessLayout();
-    startLoadingTextures();
-    loadMenuMusic();
-
+    startLoadingTextures();    
     let startBtn = document.getElementById('startBtn'); 
     hideShowMainMenu('show');
     gameState.gameActive = false;
+    await loadAmbientSounds();
+    await loadAllsounds();
     startGameFromFirstLevel();
     player.x = startX;
     player.y = startY;
@@ -590,4 +591,7 @@ window.onload = () => {
 
 document.addEventListener('visibilitychange', () => {
     handleVisibilityChange(!document.hidden);
+    if (!document.hidden && gameState.gameActive === true){
+        startAmbient(currentLevelIndex);
+    }
 });
